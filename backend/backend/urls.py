@@ -16,9 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+    path('accounts/', include(('users.urls', 'users'), namespace='users')),  # users auth
+
+    # example feed route for login redirect
+    path('', TemplateView.as_view(template_name='core/landing.html'), name='landing'),
+    path('feed/', TemplateView.as_view(template_name='core/feed.html'), name='feed'),
+
     path("__reload__/", include("django_browser_reload.urls")),
 ]
