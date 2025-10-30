@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Landing Page{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center text-center py-20 bg-dark rounded-lg shadow-lg">
+    <h2 class="text-4xl font-bold text-neutral mb-4">Welcome to SocialMediaApp</h2>
+    <p class="text-neutral mb-6 max-w-xl">Connect, share, and discover content with your friends. Dive into the most engaging social media experience.</p>
+    <a href="/feed/" class="bg-secondary hover:bg-accent text-neutral font-semibold px-6 py-3 rounded transition-colors duration-300">Go to Feed</a>
+    <img src="https://png.pngtree.com/png-clipart/20250429/original/pngtree-funny-kitty-holding-smartphone-vector-art-png-image_20897669.png" alt="Social Media Illustration" class="mt-10 w-96 h-auto">
+</div>
+{% endblock %}

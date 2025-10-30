@@ -5,6 +5,16 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, ProfileForm
 from .models import CustomUser, Profile
 
+
+def landing(request):
+    return render(request, 'landing.html') 
+
+
+def home(request):
+    return render(request, 'home.html')
+
+
+
 # ---------------------------
 # REGISTER VIEW
 # ---------------------------

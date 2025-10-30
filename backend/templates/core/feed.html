@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-[#2A2D3E] text-[#ECF0F1]">
+
+
+    <!-- Feed Container -->
+    <div class="max-w-5xl mx-auto py-10 grid gap-6">
+        {% comment %} Loop through posts (dummy example) {% endcomment %}
+        {% for i in "123456" %}
+        <div class="bg-[#1A1D29] rounded-xl p-6 shadow-lg hover:shadow-2xl transition">
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-[#3498DB] flex items-center justify-center text-white font-bold">
+                    U{{ forloop.counter }}
+                </div>
+                <div>
+                    <p class="font-semibold">User {{ forloop.counter }}</p>
+                    <p class="text-sm text-gray-400">2 hours ago</p>
+                </div>
+            </div>
+            <p class="mb-4">This is a sample post content. You can replace this with your actual feed data.</p>
+            <div class="flex space-x-4">
+                <button class="px-3 py-1 rounded bg-[#E74C3C] hover:bg-[#F39C12] transition">Like</button>
+                <button class="px-3 py-1 rounded bg-[#3498DB] hover:bg-[#F39C12] transition">Comment</button>
+                <button class="px-3 py-1 rounded border border-[#ECF0F1] hover:bg-[#F39C12] transition">Share</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,43 +1,52 @@
-<!doctype html>
-<html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{% block title %}Social App{% endblock %}</title>
-  <!-- For dev speed you can use CDN, but you said you configured tailwind - replace with your static build in prod -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Social Media App{% endblock %}</title>
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#2A2D3E',   // Deep charcoal
+              secondary: '#E74C3C', // Vibrant red
+              accent: '#3498DB',    // Electric blue
+              neutral: '#ECF0F1',   // Light gray
+              dark: '#1A1D29',      // Near black
+              highlight: '#F39C12'  // Amber
+            }
+          }
+        }
+      }
+    </script>
 </head>
-<body class="bg-gray-50 text-gray-900">
-  <nav class="bg-white shadow p-4">
-    <div class="container mx-auto flex justify-between">
-      <a href="{% url 'landing' %}" class="font-bold text-lg">SocialApp</a>
-      <div class="flex items-center space-x-4">
-        {% if user.is_authenticated %}
-          <a href="{% url 'feed' %}" class="px-3 py-1">Feed</a>
-          <a href="{% url 'users:profile' username=user.username %}" class="px-3 py-1">Profile</a>
-          <form method="post" action="{% url 'users:logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="px-3 py-1">Logout</button>
-          </form>
-        {% else %}
-          <a href="{% url 'users:login' %}" class="px-3 py-1">Login</a>
-          <a href="{% url 'users:register' %}" class="px-3 py-1">Register</a>
-        {% endif %}
-      </div>
-    </div>
-  </nav>
+<body class="bg-neutral text-dark font-sans">
 
-  <main class="container mx-auto p-6">
-    {% if messages %}
-      <div>
-        {% for msg in messages %}
-          <div class="mb-2 p-2 rounded {{ 'bg-green-100' if msg.tags == 'success' else 'bg-red-100' }}">
-            {{ msg }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
+<!-- Navbar -->
+<header class="bg-primary text-neutral shadow-md">
+    <div class="container mx-auto flex justify-between items-center p-4">
+        <h1 class="text-2xl font-bold">SocialMediaApp</h1>
+        <nav>
+            <a href="/" class="px-3 py-2 hover:text-accent">Home</a>
+            <a href="/feed/" class="px-3 py-2 hover:text-accent">Feed</a>
+            <a href="/admin/" class="px-3 py-2 hover:text-accent">Admin</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Page Content -->
+<main class="container mx-auto mt-6">
     {% block content %}{% endblock %}
-  </main>
+</main>
+
+<!-- Footer -->
+<footer class="bg-primary text-neutral mt-10 p-4 text-center">
+    &copy; 2025 Social Media App. All rights reserved.
+</footer>
+
 </body>
 </html>
