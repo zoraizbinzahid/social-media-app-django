@@ -4,48 +4,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Social Media App{% endblock %}</title>
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <title>{% block title %}Nexus Social{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#2A2D3E',   // Deep charcoal
-              secondary: '#E74C3C', // Vibrant red
-              accent: '#3498DB',    // Electric blue
-              neutral: '#ECF0F1',   // Light gray
-              dark: '#1A1D29',      // Near black
-              highlight: '#F39C12'  // Amber
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nexus: {
+                            primary: '#0F1419',
+                            secondary: '#1A1F2C', 
+                            accent: '#3B82F6',
+                            highlight: '#10B981',
+                            textPrimary: '#F8FAFC',
+                            textSecondary: '#94A3B8',
+                            border: '#2D3748'
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     </script>
 </head>
-<body class="bg-neutral text-dark font-sans">
+<body class="bg-nexus-primary text-nexus-textPrimary font-sans min-h-screen">
 
 <!-- Navbar -->
-<header class="bg-primary text-neutral shadow-md">
-    <div class="container mx-auto flex justify-between items-center p-4">
-        <h1 class="text-2xl font-bold">SocialMediaApp</h1>
-        <nav>
-            <a href="/" class="px-3 py-2 hover:text-accent">Home</a>
-            <a href="/feed/" class="px-3 py-2 hover:text-accent">Feed</a>
-            <a href="/admin/" class="px-3 py-2 hover:text-accent">Admin</a>
+<header class="bg-nexus-secondary border-b border-nexus-border shadow-lg">
+    <div class="container mx-auto flex justify-between items-center p-6">
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-nexus-accent to-nexus-highlight bg-clip-text text-transparent">
+            Nexus Social
+        </h1>
+        <nav class="flex space-x-6">
+            <a href="/" class="px-4 py-2 rounded-lg hover:bg-nexus-accent hover:text-white transition-all duration-300 font-medium">Home</a>
+            <a href="/feed/" class="px-4 py-2 rounded-lg hover:bg-nexus-accent hover:text-white transition-all duration-300 font-medium">Feed</a>
+            <a href="/admin/" class="px-4 py-2 rounded-lg bg-nexus-highlight text-white hover:bg-green-600 transition-all duration-300 font-medium">Admin</a>
         </nav>
     </div>
 </header>
 
 <!-- Page Content -->
-<main class="container mx-auto mt-6">
+<main class="container mx-auto py-8 px-4">
     {% block content %}{% endblock %}
 </main>
 
 <!-- Footer -->
-<footer class="bg-primary text-neutral mt-10 p-4 text-center">
-    &copy; 2025 Social Media App. All rights reserved.
+<footer class="bg-nexus-secondary border-t border-nexus-border mt-16 py-8">
+    <div class="container mx-auto text-center">
+        <p class="text-nexus-textSecondary">&copy; 2025 Nexus Social. Connect with purpose.</p>
+    </div>
 </footer>
 
 </body>

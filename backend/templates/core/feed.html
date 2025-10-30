@@ -2,28 +2,107 @@
 {% load static %}
 
 {% block content %}
-<div class="min-h-screen bg-[#2A2D3E] text-[#ECF0F1]">
+<div class="min-h-screen bg-nexus-primary">
 
+    <!-- Feed Header -->
+    <div class="max-w-4xl mx-auto mb-8">
+        <div class="flex items-center justify-between">
+            <h2 class="text-3xl font-bold bg-gradient-to-r from-nexus-textPrimary to-nexus-accent bg-clip-text text-transparent">
+                Your Feed
+            </h2>
+            <button class="bg-nexus-accent hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
+                + Create Post
+            </button>
+        </div>
+        <p class="text-nexus-textSecondary mt-2">Latest updates from your network</p>
+    </div>
 
     <!-- Feed Container -->
-    <div class="max-w-5xl mx-auto py-10 grid gap-6">
-        {% comment %} Loop through posts (dummy example) {% endcomment %}
+    <div class="max-w-4xl mx-auto space-y-6 pb-12">
         {% for i in "123456" %}
-        <div class="bg-[#1A1D29] rounded-xl p-6 shadow-lg hover:shadow-2xl transition">
+        <!-- Post Card -->
+        <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border hover:border-nexus-accent transition-all duration-300 shadow-lg hover:shadow-xl">
+            
+            <!-- Post Header -->
             <div class="flex items-center space-x-4 mb-4">
-                <div class="w-12 h-12 rounded-full bg-[#3498DB] flex items-center justify-center text-white font-bold">
+                <div class="w-12 h-12 bg-gradient-to-br from-nexus-accent to-nexus-highlight rounded-full flex items-center justify-center text-white font-bold shadow-lg">
                     U{{ forloop.counter }}
                 </div>
-                <div>
-                    <p class="font-semibold">User {{ forloop.counter }}</p>
-                    <p class="text-sm text-gray-400">2 hours ago</p>
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3">
+                        <p class="font-semibold text-nexus-textPrimary">User {{ forloop.counter }}</p>
+                        <span class="text-xs bg-nexus-highlight text-white px-2 py-1 rounded-full">Verified</span>
+                    </div>
+                    <p class="text-sm text-nexus-textSecondary">2 hours ago • 🌍 Public</p>
                 </div>
             </div>
-            <p class="mb-4">This is a sample post content. You can replace this with your actual feed data.</p>
-            <div class="flex space-x-4">
-                <button class="px-3 py-1 rounded bg-[#E74C3C] hover:bg-[#F39C12] transition">Like</button>
-                <button class="px-3 py-1 rounded bg-[#3498DB] hover:bg-[#F39C12] transition">Comment</button>
-                <button class="px-3 py-1 rounded border border-[#ECF0F1] hover:bg-[#F39C12] transition">Share</button>
+
+            <!-- Post Content -->
+            <div class="mb-6">
+                <p class="text-nexus-textPrimary leading-relaxed mb-4">
+                    This is a sample post content showing how engaging posts look in Nexus Social. You can replace this with your actual feed data and dynamic content.
+                </p>
+                <!-- Post Image Placeholder -->
+                <div class="bg-nexus-primary rounded-xl p-8 border border-nexus-border text-center">
+                    <p class="text-nexus-textSecondary">📷 Image content would appear here</p>
+                </div>
+            </div>
+
+            <!-- Engagement Stats -->
+            <div class="flex items-center justify-between text-nexus-textSecondary text-sm border-b border-nexus-border pb-4 mb-4">
+                <div class="flex items-center space-x-4">
+                    <span>❤️ 24 likes</span>
+                    <span>💬 8 comments</span>
+                    <span>🔄 3 shares</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-2">
+                <button class="flex-1 flex items-center justify-center space-x-2 py-3 rounded-xl hover:bg-nexus-primary text-nexus-textSecondary hover:text-red-400 transition-all duration-200">
+                    <span>❤️</span>
+                    <span class="font-medium">Like</span>
+                </button>
+                <button class="flex-1 flex items-center justify-center space-x-2 py-3 rounded-xl hover:bg-nexus-primary text-nexus-textSecondary hover:text-nexus-accent transition-all duration-200">
+                    <span>💬</span>
+                    <span class="font-medium">Comment</span>
+                </button>
+                <button class="flex-1 flex items-center justify-center space-x-2 py-3 rounded-xl hover:bg-nexus-primary text-nexus-textSecondary hover:text-nexus-highlight transition-all duration-200">
+                    <span>🔄</span>
+                    <span class="font-medium">Share</span>
+                </button>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="mt-6 space-y-4">
+                <div class="flex space-x-3">
+                    <div class="w-8 h-8 bg-nexus-accent rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        A
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-nexus-primary rounded-2xl px-4 py-3">
+                            <h5 class="font-semibold text-sm text-nexus-textPrimary">Alex</h5>
+                            <p class="text-nexus-textSecondary text-sm mt-1">Great post! Love the content! 👏</p>
+                        </div>
+                        <div class="flex space-x-4 mt-2 text-xs text-nexus-textSecondary">
+                            <button class="hover:text-nexus-accent">Like</button>
+                            <button class="hover:text-nexus-accent">Reply</button>
+                            <span>1h ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comment Input -->
+                <div class="flex space-x-3 mt-4">
+                    <div class="w-8 h-8 bg-nexus-border rounded-full flex items-center justify-center text-nexus-textSecondary text-xs">
+                        Y
+                    </div>
+                    <div class="flex-1">
+                        <input type="text" 
+                               placeholder="Write a comment..." 
+                               class="w-full bg-nexus-primary border border-nexus-border rounded-2xl px-4 py-3 text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-transparent">
+                    </div>
+                </div>
             </div>
         </div>
         {% endfor %}

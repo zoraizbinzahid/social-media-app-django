@@ -1,11 +1,56 @@
 {% extends 'base.html' %}
-{% block title %}Landing Page{% endblock %}
+{% block title %}Welcome to Nexus Social{% endblock %}
 
 {% block content %}
-<div class="flex flex-col items-center justify-center text-center py-20 bg-dark rounded-lg shadow-lg">
-    <h2 class="text-4xl font-bold text-neutral mb-4">Welcome to SocialMediaApp</h2>
-    <p class="text-neutral mb-6 max-w-xl">Connect, share, and discover content with your friends. Dive into the most engaging social media experience.</p>
-    <a href="/feed/" class="bg-secondary hover:bg-accent text-neutral font-semibold px-6 py-3 rounded transition-colors duration-300">Go to Feed</a>
-    <img src="https://png.pngtree.com/png-clipart/20250429/original/pngtree-funny-kitty-holding-smartphone-vector-art-png-image_20897669.png" alt="Social Media Illustration" class="mt-10 w-96 h-auto">
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="text-center max-w-4xl mx-auto">
+        <!-- Hero Section -->
+        <div class="mb-12">
+            <h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-nexus-textPrimary via-nexus-accent to-nexus-highlight bg-clip-text text-transparent">
+                Nexus Social
+            </h1>
+            <p class="text-2xl text-nexus-textSecondary mb-8 leading-relaxed">
+                Where meaningful connections happen. Share your story, discover others, and build your community.
+            </p>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="mb-16">
+            <a href="/feed/" 
+               class="inline-flex items-center px-8 py-4 bg-nexus-accent hover:bg-blue-600 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                <span>Explore Your Feed</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+            </a>
+        </div>
+
+        <!-- Feature Showcase -->
+        <div class="grid md:grid-cols-3 gap-8 mt-16">
+            <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border hover:border-nexus-accent transition-all duration-300">
+                <div class="w-12 h-12 bg-nexus-accent rounded-lg flex items-center justify-center mb-4 mx-auto">
+                    <span class="text-white font-bold">👥</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Connect</h3>
+                <p class="text-nexus-textSecondary">Build meaningful relationships with like-minded people</p>
+            </div>
+            
+            <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border hover:border-nexus-highlight transition-all duration-300">
+                <div class="w-12 h-12 bg-nexus-highlight rounded-lg flex items-center justify-center mb-4 mx-auto">
+                    <span class="text-white font-bold">💬</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Share</h3>
+                <p class="text-nexus-textSecondary">Express yourself through posts, images, and stories</p>
+            </div>
+            
+            <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border hover:border-nexus-accent transition-all duration-300">
+                <div class="w-12 h-12 bg-nexus-accent rounded-lg flex items-center justify-center mb-4 mx-auto">
+                    <span class="text-white font-bold">🔍</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Discover</h3>
+                <p class="text-nexus-textSecondary">Find content and communities that inspire you</p>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
