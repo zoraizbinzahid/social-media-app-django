@@ -1,22 +1,120 @@
 {% extends "base.html" %}
-{% block title %}Register{% endblock %}
+{% block title %}Join Nexus Social{% endblock %}
+
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded shadow">
-  <h2 class="text-2xl mb-4">Create an account</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <div class="space-y-4">
-      {% for field in form %}
-        <div>
-          <label class="block text-sm font-medium">{{ field.label }}</label>
-          {{ field }}
-          <p class="text-xs text-red-500">{{ field.errors }}</p>
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-8">
+    <div class="max-w-md w-full">
+        <!-- Registration Card -->
+        <div class="bg-nexus-secondary rounded-2xl p-8 border border-nexus-border shadow-xl">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-nexus-textPrimary to-nexus-accent bg-clip-text text-transparent mb-2">
+                    Join Nexus
+                </h2>
+                <p class="text-nexus-textSecondary">Create your account and start connecting</p>
+            </div>
+
+            <!-- Registration Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Non-field Errors -->
+                {% if form.non_field_errors %}
+                <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                    <p class="text-red-400 text-sm">{{ form.non_field_errors }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Form Fields -->
+                <div class="space-y-5">
+                    {% for field in form %}
+                    <div>
+                        <label class="block text-nexus-textPrimary font-medium mb-2">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                            <span class="text-red-400">*</span>
+                            {% endif %}
+                        </label>
+                        
+                        {{ field }}
+                        
+                        <!-- Field Errors Only (No Help Text) -->
+                        {% if field.errors %}
+                        <div class="mt-2 text-red-400 text-sm">
+                            {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Terms Agreement -->
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" id="terms" class="mt-1 rounded border-nexus-border bg-nexus-primary text-nexus-accent focus:ring-nexus-accent">
+                    <label for="terms" class="text-nexus-textSecondary text-sm">
+                        I agree to the <a href="#" class="text-nexus-accent hover:text-blue-400">Terms of Service</a> 
+                        and <a href="#" class="text-nexus-accent hover:text-blue-400">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <!-- Register Button -->
+                <button 
+                    type="submit"
+                    class="w-full bg-gradient-to-r from-nexus-accent to-nexus-highlight hover:from-blue-600 hover:to-green-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                >
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Login Link -->
+            <div class="text-center mt-6 pt-6 border-t border-nexus-border">
+                <p class="text-nexus-textSecondary">
+                    Already have an account? 
+                    <a href="{% url 'users:login' %}" class="text-nexus-accent hover:text-blue-400 font-semibold transition-colors duration-200">
+                        Sign in here
+                    </a>
+                </p>
+            </div>
         </div>
-      {% endfor %}
+
+        <!-- Security Note -->
+        <div class="text-center mt-6">
+            <p class="text-nexus-textSecondary text-sm flex items-center justify-center space-x-2">
+                <span>🔒</span>
+                <span>Your data is securely encrypted and protected</span>
+            </p>
+        </div>
     </div>
-    <button class="mt-4 w-full py-2 rounded bg-blue-600 text-white">Register</button>
-  </form>
-  <p class="mt-4 text-sm">Already have an account? <a href="{% url 'users:login' %}" class="text-blue-600">Login</a></p>
 </div>
+
+<style>
+/* Style Django form fields to match Nexus theme */
+input, textarea, select {
+    width: 100%;
+    background: #0F1419;
+    border: 1px solid #2D3748;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #F8FAFC;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+input::placeholder {
+    color: #94A3B8;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+    width: auto;
+}
+</style>
 {% endblock %}

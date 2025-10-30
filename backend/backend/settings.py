@@ -145,5 +145,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 LOGIN_REDIRECT_URL = 'feed'        # After successful login
-LOGOUT_REDIRECT_URL = 'landing'    # After logout
+LOGOUT_REDIRECT_URL = 'users:login'    # After logout
 LOGIN_URL = 'users:login'          # When login is required but user is not logged in

@@ -1,23 +1,88 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}Login - Nexus Social{% endblock %}
+
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded shadow">
-  <h2 class="text-2xl mb-4">Login</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm">Username</label>
-        <input name="username" required class="w-full p-2 border rounded" />
-      </div>
-      <div>
-        <label class="block text-sm">Password</label>
-        <input name="password" type="password" required class="w-full p-2 border rounded" />
-      </div>
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="max-w-md w-full">
+        <!-- Login Card -->
+        <div class="bg-nexus-secondary rounded-2xl p-8 border border-nexus-border shadow-xl">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-nexus-textPrimary to-nexus-accent bg-clip-text text-transparent mb-2">
+                    Welcome Back
+                </h2>
+                <p class="text-nexus-textSecondary">Sign in to your Nexus account</p>
+            </div>
+
+            <!-- Login Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                    <p class="text-red-400 text-sm">{{ form.non_field_errors }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Username Field -->
+                <div>
+                    <label class="block text-nexus-textPrimary font-medium mb-2">Username</label>
+                    <input 
+                        name="username" 
+                        required 
+                        class="w-full bg-nexus-primary border border-nexus-border rounded-xl px-4 py-3 text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-transparent transition-all duration-200"
+                        placeholder="Enter your username"
+                    />
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label class="block text-nexus-textPrimary font-medium mb-2">Password</label>
+                    <input 
+                        name="password" 
+                        type="password" 
+                        required 
+                        class="w-full bg-nexus-primary border border-nexus-border rounded-xl px-4 py-3 text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-transparent transition-all duration-200"
+                        placeholder="Enter your password"
+                    />
+                </div>
+
+                <!-- Login Button -->
+                <button 
+                    type="submit"
+                    class="w-full bg-nexus-accent hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                >
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="flex items-center my-6">
+                <div class="flex-1 border-t border-nexus-border"></div>
+                <span class="px-4 text-nexus-textSecondary text-sm">or</span>
+                <div class="flex-1 border-t border-nexus-border"></div>
+            </div>
+
+            <!-- Register Link -->
+            <div class="text-center">
+                <p class="text-nexus-textSecondary">
+                    Don't have an account? 
+                    <a href="{% url 'users:register' %}" class="text-nexus-accent hover:text-blue-400 font-semibold transition-colors duration-200">
+                        Create one here
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="text-center mt-6">
+            <p class="text-nexus-textSecondary text-sm">
+                By signing in, you agree to our 
+                <a href="#" class="text-nexus-accent hover:text-blue-400">Terms</a> 
+                and 
+                <a href="#" class="text-nexus-accent hover:text-blue-400">Privacy Policy</a>
+            </p>
+        </div>
     </div>
-    <button class="mt-4 w-full py-2 rounded bg-green-600 text-white">Login</button>
-  </form>
-  <p class="mt-4 text-sm">Don't have an account? <a href="{% url 'users:register' %}" class="text-blue-600">Register</a></p>
 </div>
 {% endblock %}

@@ -1,17 +1,133 @@
 {% extends "base.html" %}
-{% block title %}Profile - {{ user_obj.username }}{% endblock %}
+{% block title %}{{ user_obj.username }} - Nexus Social{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-  <div class="flex items-center space-x-4">
-    <img src="{{ user_obj.profile.profile_pic.url if user_obj.profile.profile_pic else '/static/default.jpg' }}" alt="avatar" class="w-20 h-20 rounded-full object-cover">
-    <div>
-      <h2 class="text-2xl font-bold">{{ user_obj.username }}</h2>
-      <p class="text-sm text-gray-600">{{ user_obj.email }}</p>
-      <p class="mt-2">{{ user_obj.profile.bio }}</p>
-      {% if user == user_obj %}
-        <a href="{% url 'users:edit_profile' %}" class="inline-block mt-3 px-3 py-1 bg-indigo-600 text-white rounded">Edit Profile</a>
-      {% endif %}
+<div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- Profile Header Card -->
+    <div class="bg-nexus-secondary rounded-2xl p-8 border border-nexus-border shadow-xl">
+        <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+            
+            <!-- Profile Picture -->
+            <div class="relative">
+                <img 
+                    src="{{ user_obj.profile.profile_pic.url if user_obj.profile.profile_pic else '/static/default.jpg' }}" 
+                    alt="{{ user_obj.username }}'s profile picture" 
+                    class="w-32 h-32 rounded-full object-cover border-4 border-nexus-accent shadow-lg"
+                >
+                {% if user_obj.profile.is_verified %}
+                <div class="absolute bottom-2 right-2 w-8 h-8 bg-nexus-highlight rounded-full flex items-center justify-center border-2 border-nexus-secondary">
+                    <span class="text-white text-sm">✓</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Profile Info -->
+            <div class="flex-1 text-center md:text-left">
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-nexus-textPrimary to-nexus-accent bg-clip-text text-transparent">
+                        {{ user_obj.username }}
+                    </h1>
+                    {% if user_obj.profile.is_verified %}
+                    <span class="inline-flex items-center px-3 py-1 bg-nexus-highlight text-white text-sm rounded-full font-medium mt-2 md:mt-0">
+                        <span class="mr-1">✓</span> Verified
+                    </span>
+                    {% endif %}
+                </div>
+
+                <p class="text-nexus-textSecondary text-lg mb-4">{{ user_obj.email }}</p>
+                
+                {% if user_obj.profile.bio %}
+                <p class="text-nexus-textPrimary leading-relaxed mb-6 max-w-2xl">
+                    {{ user_obj.profile.bio }}
+                </p>
+                {% else %}
+                <p class="text-nexus-textSecondary italic mb-6">No bio yet</p>
+                {% endif %}
+
+                <!-- Stats -->
+                <div class="flex justify-center md:justify-start space-x-8 text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-nexus-textPrimary">142</p>
+                        <p class="text-nexus-textSecondary text-sm">Posts</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-nexus-textPrimary">1.2K</p>
+                        <p class="text-nexus-textSecondary text-sm">Followers</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-nexus-textPrimary">856</p>
+                        <p class="text-nexus-textSecondary text-sm">Following</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-nexus-border">
+            {% if user == user_obj %}
+            <a href="{% url 'users:edit_profile' %}" 
+               class="flex-1 bg-nexus-accent hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl text-center transition-all duration-300 transform hover:scale-[1.02]">
+                Edit Profile
+            </a>
+            {% else %}
+            <button class="flex-1 bg-nexus-accent hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02]">
+                Follow
+            </button>
+            <button class="flex-1 bg-nexus-secondary border border-nexus-accent text-nexus-accent hover:bg-nexus-accent hover:text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300">
+                Message
+            </button>
+            {% endif %}
+        </div>
     </div>
-  </div>
+
+    <!-- Additional Profile Sections -->
+    <div class="grid md:grid-cols-2 gap-6">
+        
+        <!-- Details Card -->
+        <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border">
+            <h3 class="text-xl font-semibold text-nexus-textPrimary mb-4">Details</h3>
+            <div class="space-y-3">
+                <div class="flex items-center space-x-3">
+                    <span class="text-nexus-accent">📍</span>
+                    <span class="text-nexus-textSecondary">Location: </span>
+                    <span class="text-nexus-textPrimary">New York, USA</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-nexus-accent">🔗</span>
+                    <span class="text-nexus-textSecondary">Website: </span>
+                    <a href="#" class="text-nexus-accent hover:text-blue-400">example.com</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-nexus-accent">📅</span>
+                    <span class="text-nexus-textSecondary">Joined: </span>
+                    <span class="text-nexus-textPrimary">January 2024</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border">
+            <h3 class="text-xl font-semibold text-nexus-textPrimary mb-4">Recent Activity</h3>
+            <div class="space-y-3">
+                <div class="flex items-center space-x-3 text-sm">
+                    <div class="w-2 h-2 bg-nexus-highlight rounded-full"></div>
+                    <span class="text-nexus-textPrimary">Liked a post</span>
+                    <span class="text-nexus-textSecondary">2 hours ago</span>
+                </div>
+                <div class="flex items-center space-x-3 text-sm">
+                    <div class="w-2 h-2 bg-nexus-accent rounded-full"></div>
+                    <span class="text-nexus-textPrimary">Commented on photo</span>
+                    <span class="text-nexus-textSecondary">5 hours ago</span>
+                </div>
+                <div class="flex items-center space-x-3 text-sm">
+                    <div class="w-2 h-2 bg-nexus-highlight rounded-full"></div>
+                    <span class="text-nexus-textPrimary">Started following Alex</span>
+                    <span class="text-nexus-textSecondary">1 day ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
