@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,7 +41,7 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'django_browser_reload',
-    'users.apps.UsersConfig',    
+    
 ]
 TAILWIND_APP_NAME = 'theme'# This is the name of the app that will be used to generate the tailwind files
 INTERNAL_IPS = ['127.0.0.1']
@@ -63,7 +64,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,6 +76,13 @@ TEMPLATES = [
     },
 ]
 
+# Static & Media
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
+
+
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
@@ -84,7 +92,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'social_media_db',
+        'NAME': 'social_media_db_new',
         'USER': 'postgres',
         'PASSWORD': 'zoraiz123',
         'HOST': 'localhost',

@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}Social App{% endblock %}</title>
+  <!-- For dev speed you can use CDN, but you said you configured tailwind - replace with your static build in prod -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <nav class="bg-white shadow p-4">
+    <div class="container mx-auto flex justify-between">
+      <a href="{% url 'landing' %}" class="font-bold text-lg">SocialApp</a>
+      <div class="flex items-center space-x-4">
+        {% if user.is_authenticated %}
+          <a href="{% url 'feed' %}" class="px-3 py-1">Feed</a>
+          <a href="{% url 'users:profile' username=user.username %}" class="px-3 py-1">Profile</a>
+          <form method="post" action="{% url 'users:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="px-3 py-1">Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'users:login' %}" class="px-3 py-1">Login</a>
+          <a href="{% url 'users:register' %}" class="px-3 py-1">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mx-auto p-6">
+    {% if messages %}
+      <div>
+        {% for msg in messages %}
+          <div class="mb-2 p-2 rounded {{ 'bg-green-100' if msg.tags == 'success' else 'bg-red-100' }}">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

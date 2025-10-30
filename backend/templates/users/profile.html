@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Profile - {{ user_obj.username }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+  <div class="flex items-center space-x-4">
+    <img src="{{ user_obj.profile.profile_pic.url if user_obj.profile.profile_pic else '/static/default.jpg' }}" alt="avatar" class="w-20 h-20 rounded-full object-cover">
+    <div>
+      <h2 class="text-2xl font-bold">{{ user_obj.username }}</h2>
+      <p class="text-sm text-gray-600">{{ user_obj.email }}</p>
+      <p class="mt-2">{{ user_obj.profile.bio }}</p>
+      {% if user == user_obj %}
+        <a href="{% url 'users:edit_profile' %}" class="inline-block mt-3 px-3 py-1 bg-indigo-600 text-white rounded">Edit Profile</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
