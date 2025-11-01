@@ -4,6 +4,28 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, ProfileForm
 from .models import CustomUser, Profile
+from django.db.models import Q 
+
+
+
+def search_view(request):
+    query = request.GET.get('q', '')
+    results = {
+        'users': [],
+        'posts': []
+    }
+    
+    if query:
+        # Search users by username or bio
+        results['users'] = CustomUser.objects.filter(
+            Q(username__icontains=query) | 
+            Q(profile__bio__icontains=query)
+        ).select_related('profile')
+    
+    return render(request, 'users/search_results.html', {
+        'query': query,
+        'results': results
+    })
 
 
 def landing(request):
@@ -85,3 +107,32 @@ def edit_profile_view(request):
         form = ProfileForm(instance=profile, user=request.user)
 
     return render(request, 'users/edit_profile.html', {'form': form})
+
+
+
+from django.db.models import Q
+
+def search_view(request):
+    query = request.GET.get('q', '')
+    results = {
+        'users': [],
+        'posts': []
+    }
+    
+    if query:
+        # Search users
+        results['users'] = CustomUser.objects.filter(
+            Q(username__icontains=query) | 
+            Q(profile__bio__icontains=query)
+        ).select_related('profile')
+        
+        # Search posts (when you create posts app)
+        # results['posts'] = Post.objects.filter(
+        #     Q(content__icontains=query) |
+        #     Q(author__username__icontains=query)
+        # )
+    
+    return render(request, 'users/search_results.html', {
+        'query': query,
+        'results': results
+    })

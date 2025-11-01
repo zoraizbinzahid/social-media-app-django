@@ -43,22 +43,26 @@
             <div class="relative">
                 <!-- Search Input -->
                 <div class="relative group">
-                    <input 
-                        type="text" 
-                        placeholder="Search profiles and posts..." 
-                        class="w-full bg-nexus-primary border border-nexus-border rounded-2xl pl-12 pr-4 py-3 text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent transition-all duration-300 backdrop-blur-sm"
-                        @focus="searchOpen = true"
-                        @blur="setTimeout(() => searchOpen = false, 150)"
-                    >
-                    <!-- Search Icon -->
-                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
-                        <svg class="w-5 h-5 text-nexus-textSecondary group-focus-within:text-nexus-accent transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </div>
-                    <!-- Animated Border -->
-                    <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-nexus-accent to-nexus-highlight opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
-                    <div class="absolute inset-[1px] rounded-2xl bg-nexus-primary -z-10"></div>
+                    <form method="get" action="{% url 'users:search' %}" class="flex">
+                        <input 
+                            type="text" 
+                            name="q"
+                            placeholder="Search profiles and posts..." 
+                            class="w-full bg-nexus-primary border border-nexus-border rounded-2xl pl-12 pr-4 py-3 text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent transition-all duration-300 backdrop-blur-sm"
+                            @focus="searchOpen = true"
+                            @blur="setTimeout(() => searchOpen = false, 150)"
+                            value="{{ request.GET.q }}"
+                        >
+                        <!-- Search Icon -->
+                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                            <svg class="w-5 h-5 text-nexus-textSecondary group-focus-within:text-nexus-accent transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <!-- Animated Border -->
+                        <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-nexus-accent to-nexus-highlight opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
+                        <div class="absolute inset-[1px] rounded-2xl bg-nexus-primary -z-10"></div>
+                    </form>
                 </div>
 
                 <!-- Search Results Dropdown -->
@@ -73,73 +77,30 @@
                     class="absolute top-full left-0 right-0 mt-2 bg-nexus-secondary border border-nexus-border rounded-2xl shadow-2xl z-50 max-h-96 overflow-y-auto"
                     style="display: none;"
                 >
-                    <!-- Recent Searches -->
+                    <!-- Quick Actions -->
                     <div class="p-4 border-b border-nexus-border">
-                        <h3 class="text-sm font-semibold text-nexus-textSecondary mb-2">Recent Searches</h3>
-                        <div class="space-y-1">
-                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
-                                <div class="w-8 h-8 bg-nexus-accent rounded-full flex items-center justify-center">
-                                    <span class="text-white text-sm font-semibold">J</span>
-                                </div>
-                                <span class="text-nexus-textPrimary">john_doe</span>
-                            </div>
-                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
-                                <div class="w-8 h-8 bg-nexus-highlight rounded-full flex items-center justify-center">
-                                    <span class="text-white text-sm font-semibold">S</span>
-                                </div>
-                                <span class="text-nexus-textPrimary">sarah_tech</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Filters -->
-                    <div class="p-4 border-b border-nexus-border">
-                        <h3 class="text-sm font-semibold text-nexus-textSecondary mb-2">Quick Search</h3>
+                        <h3 class="text-sm font-semibold text-nexus-textSecondary mb-2">Quick Actions</h3>
                         <div class="flex flex-wrap gap-2">
-                            <button class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-accent hover:text-white transition-all duration-200">
+                            <a href="{% url 'users:search' %}?q=programming" class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-accent hover:text-white transition-all duration-200">
                                 #programming
-                            </button>
-                            <button class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-accent hover:text-white transition-all duration-200">
+                            </a>
+                            <a href="{% url 'users:search' %}?q=design" class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-accent hover:text-white transition-all duration-200">
                                 #design
-                            </button>
-                            <button class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-highlight hover:text-white transition-all duration-200">
+                            </a>
+                            <a href="{% url 'users:search' %}?q=tech" class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-highlight hover:text-white transition-all duration-200">
                                 #tech
-                            </button>
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Suggested Profiles -->
+                    <!-- Search Instructions -->
                     <div class="p-4">
-                        <h3 class="text-sm font-semibold text-nexus-textSecondary mb-2">Suggested Profiles</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-gradient-to-r from-nexus-accent to-nexus-highlight rounded-full flex items-center justify-center">
-                                        <span class="text-white text-sm font-semibold">A</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-nexus-textPrimary font-medium">alex_coder</p>
-                                        <p class="text-nexus-textSecondary text-xs">Full Stack Developer</p>
-                                    </div>
-                                </div>
-                                <button class="px-3 py-1 bg-nexus-accent text-white text-xs rounded-full hover:bg-blue-600 transition-colors duration-200">
-                                    Follow
-                                </button>
-                            </div>
-                            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-gradient-to-r from-nexus-highlight to-green-400 rounded-full flex items-center justify-center">
-                                        <span class="text-white text-sm font-semibold">M</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-nexus-textPrimary font-medium">mia_designs</p>
-                                        <p class="text-nexus-textSecondary text-xs">UI/UX Designer</p>
-                                    </div>
-                                </div>
-                                <button class="px-3 py-1 bg-nexus-accent text-white text-xs rounded-full hover:bg-blue-600 transition-colors duration-200">
-                                    Follow
-                                </button>
-                            </div>
+                        <div class="text-center text-nexus-textSecondary">
+                            <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <p class="text-sm">Type and press Enter to search</p>
+                            <p class="text-xs mt-1">Search for users by username or bio</p>
                         </div>
                     </div>
                 </div>

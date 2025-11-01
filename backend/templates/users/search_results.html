@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Search - Nexus Social{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Search Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-nexus-textPrimary mb-2">Search Results</h1>
+        <p class="text-nexus-textSecondary">
+            {% if query %}
+                Results for "{{ query }}"
+            {% else %}
+                Enter a search term to find users and posts
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Users Results -->
+    {% if results.users %}
+    <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border">
+        <h2 class="text-2xl font-semibold text-nexus-textPrimary mb-4">Users</h2>
+        <div class="space-y-4">
+            {% for user in results.users %}
+            <div class="flex items-center justify-between p-4 bg-nexus-primary rounded-xl border border-nexus-border hover:border-nexus-accent transition-all duration-300">
+                <div class="flex items-center space-x-4">
+                    {% if user.profile.profile_pic %}
+                        <img src="{{ user.profile.profile_pic.url }}" 
+                             alt="{{ user.username }}" 
+                             class="w-12 h-12 rounded-full border-2 border-nexus-accent object-cover">
+                    {% else %}
+                        <div class="w-12 h-12 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                            {{ user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h3 class="text-nexus-textPrimary font-semibold">{{ user.username }}</h3>
+                        {% if user.profile.bio %}
+                        <p class="text-nexus-textSecondary text-sm mt-1">{{ user.profile.bio|truncatewords:10 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="{% url 'users:profile' username=user.username %}" 
+                   class="px-4 py-2 bg-nexus-accent text-white rounded-lg hover:bg-blue-600 transition-colors duration-200">
+                    View Profile
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Posts Results (when you implement posts) -->
+    {% if results.posts %}
+    <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border">
+        <h2 class="text-2xl font-semibold text-nexus-textPrimary mb-4">Posts</h2>
+        <div class="space-y-4">
+            {% for post in results.posts %}
+            <!-- Post results will go here -->
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Results -->
+    {% if query and not results.users and not results.posts %}
+    <div class="text-center py-12">
+        <div class="text-nexus-textSecondary text-6xl mb-4">🔍</div>
+        <h3 class="text-xl font-semibold text-nexus-textPrimary mb-2">No results found</h3>
+        <p class="text-nexus-textSecondary">Try different keywords or search terms</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
