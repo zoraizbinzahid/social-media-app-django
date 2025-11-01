@@ -23,12 +23,11 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include(('users.urls', 'users'), namespace='users')),  # users auth
-
-    # example feed route for login redirect
-    path('', TemplateView.as_view(template_name='core/feed.html'), name='home'),
+    path('accounts/', include(('users.urls', 'users'), namespace='users')),
     path('landing/', TemplateView.as_view(template_name='core/landing.html'), name='landing'),
-
+    path('', include(('posts.urls', 'posts'), namespace='posts')), 
+    
+    
     path("__reload__/", include("django_browser_reload.urls")),
 ]
 
