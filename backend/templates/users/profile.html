@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ user_obj.username }} - Nexus Social{% endblock %}
 
 {% block content %}
@@ -10,11 +11,20 @@
             
             <!-- Profile Picture -->
             <div class="relative">
-                <img 
-                    src="{{ user_obj.profile.profile_pic.url if user_obj.profile.profile_pic else '/static/default.jpg' }}" 
-                    alt="{{ user_obj.username }}'s profile picture" 
-                    class="w-32 h-32 rounded-full object-cover border-4 border-nexus-accent shadow-lg"
-                >
+                {% if user_obj.profile.profile_pic %}
+                    <img 
+                        src="{{ user_obj.profile.profile_pic.url }}" 
+                        alt="{{ user_obj.username }}'s profile picture" 
+                        class="w-32 h-32 rounded-full object-cover border-4 border-nexus-accent shadow-lg"
+                    >
+                {% else %}
+                    <img 
+                        src="{% static 'default.jpg' %}" 
+                        alt="{{ user_obj.username }}'s default profile picture" 
+                        class="w-32 h-32 rounded-full object-cover border-4 border-nexus-accent shadow-lg"
+                    >
+                {% endif %}
+
                 {% if user_obj.profile.is_verified %}
                 <div class="absolute bottom-2 right-2 w-8 h-8 bg-nexus-highlight rounded-full flex items-center justify-center border-2 border-nexus-secondary">
                     <span class="text-white text-sm">✓</span>
@@ -88,20 +98,37 @@
         <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border">
             <h3 class="text-xl font-semibold text-nexus-textPrimary mb-4">Details</h3>
             <div class="space-y-3">
+                <!-- Location -->
                 <div class="flex items-center space-x-3">
                     <span class="text-nexus-accent">📍</span>
                     <span class="text-nexus-textSecondary">Location: </span>
-                    <span class="text-nexus-textPrimary">New York, USA</span>
+                    {% if user_obj.profile.location %}
+                        <span class="text-nexus-textPrimary">{{ user_obj.profile.location }}</span>
+                    {% else %}
+                        <span class="text-nexus-textSecondary italic">Not specified</span>
+                    {% endif %}
                 </div>
+                
+                <!-- Website/Social Links -->
                 <div class="flex items-center space-x-3">
                     <span class="text-nexus-accent">🔗</span>
                     <span class="text-nexus-textSecondary">Website: </span>
-                    <a href="#" class="text-nexus-accent hover:text-blue-400">example.com</a>
+                    {% if user_obj.profile.social_links %}
+                        <a href="{{ user_obj.profile.social_links }}" 
+                           target="_blank" 
+                           class="text-nexus-accent hover:text-blue-400 transition-colors duration-200">
+                            {{ user_obj.profile.social_links }}
+                        </a>
+                    {% else %}
+                        <span class="text-nexus-textSecondary italic">No website added</span>
+                    {% endif %}
                 </div>
+                
+                <!-- Join Date -->
                 <div class="flex items-center space-x-3">
                     <span class="text-nexus-accent">📅</span>
                     <span class="text-nexus-textSecondary">Joined: </span>
-                    <span class="text-nexus-textPrimary">January 2024</span>
+                    <span class="text-nexus-textPrimary">{{ user_obj.date_joined|date:"F Y" }}</span>
                 </div>
             </div>
         </div>

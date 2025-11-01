@@ -1,21 +1,163 @@
 {% extends "base.html" %}
-{% block title %}Edit Profile{% endblock %}
+{% block title %}Edit Profile - Nexus Social{% endblock %}
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded shadow">
-  <h2 class="text-2xl mb-4">Edit Profile</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <div class="space-y-4">
-      {% for field in form %}
-        <div>
-          <label class="block text-sm font-medium">{{ field.label }}</label>
-          {{ field }}
-          <p class="text-xs text-red-500">{{ field.errors }}</p>
-        </div>
-      {% endfor %}
+
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Edit Your Profile</h1>
+      <p class="text-gray-600 mt-2">Customize how others see you on the platform</p>
     </div>
-    <button class="mt-4 w-full py-2 rounded bg-blue-600 text-white">Save</button>
-  </form>
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+      <!-- Profile Preview Header -->
+      <div class="bg-gradient-to-r from-blue-600 to-purple-700 px-6 py-8 text-center">
+        <div class="inline-block relative">
+          <img 
+            src="{% if user.profile.profile_pic %}{{ user.profile.profile_pic.url }}{% else %}https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80{% endif %}" 
+            alt="Profile Picture"
+            class="w-24 h-24 rounded-full border-4 border-white shadow-lg mx-auto object-cover"
+            id="avatar-preview"
+          >
+          <div class="absolute bottom-1 right-1 bg-white rounded-full p-1.5 shadow-lg">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+        </div>
+        <h2 class="text-white font-bold mt-4 text-xl">{{ user.username }}</h2>
+        <p class="text-blue-100 text-sm mt-1">{{ user.email }}</p>
+      </div>
+
+      <!-- Form -->
+      <form method="post" enctype="multipart/form-data" class="p-6 space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-red-800 font-medium">Please fix the following errors:</span>
+          </div>
+          <ul class="mt-2 text-red-700 text-sm list-disc list-inside">
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Custom Styled Form Fields -->
+        <div class="space-y-6">
+          <!-- Profile Picture Upload Field -->
+          <div class="space-y-3">
+            <label class="block text-sm font-semibold text-gray-900">Profile Picture</label>
+            <div class="flex items-center space-x-4">
+              <label for="id_profile_pic" class="cursor-pointer">
+                <div class="flex items-center space-x-2 px-4 py-3 bg-blue-50 border-2 border-blue-200 border-dashed rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="text-blue-700 font-medium">Choose new photo</span>
+                </div>
+                <input type="file" name="profile_pic" id="id_profile_pic" class="hidden" accept="image/*">
+              </label>
+              <span class="text-sm text-gray-500" id="file-name">No file chosen</span>
+            </div>
+            {% if form.profile_pic.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.profile_pic.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Username Field -->
+          <div class="space-y-3">
+            <label for="id_username" class="block text-sm font-semibold text-gray-900">
+              Username
+            </label>
+            <input 
+              type="text" 
+              name="username" 
+              id="id_username" 
+              value="{{ form.username.value|default:user.username }}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent transition-all duration-200 bg-white text-black placeholder-gray-500"
+              placeholder="Enter your username"
+            >
+            {% if form.username.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.username.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Bio Field -->
+          <div class="space-y-3">
+            <label for="id_bio" class="block text-sm font-semibold text-gray-900">Bio</label>
+            <div class="relative">
+              <textarea 
+                name="bio" 
+                id="id_bio" 
+                rows="4"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent transition-all duration-200 bg-white text-black placeholder-gray-500 resize-none pr-12"
+                placeholder="Tell everyone about yourself..."
+              >{{ form.bio.value|default:'' }}</textarea>
+            </div>
+            <div class="flex justify-between items-center text-xs text-gray-500">
+              <span>Tell everyone about yourself</span>
+              <span id="bio-counter">0/500 characters</span>
+            </div>
+            {% if form.bio.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.bio.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Location Field -->
+          <div class="space-y-3">
+            <label for="id_location" class="block text-sm font-semibold text-gray-900">Location</label>
+            <input 
+              type="text" 
+              name="location" 
+              id="id_location" 
+              value="{{ form.location.value|default:'' }}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent transition-all duration-200 bg-white text-black placeholder-gray-500"
+              placeholder="Enter your location (e.g., New York, USA)"
+            >
+            {% if form.location.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.location.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Social Links -->
+          <div class="space-y-3">
+            <label for="id_social_links" class="block text-sm font-semibold text-gray-900">Social Links</label>
+            <input 
+              type="text" 
+              name="social_links" 
+              id="id_social_links" 
+              value="{{ form.social_links.value|default:'' }}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-black placeholder-gray-500"
+              placeholder="https://twitter.com/username"
+            >
+            {% if form.social_links.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.social_links.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex space-x-4 pt-8 border-t border-gray-200">
+          <a href="javascript:history.back()" class="flex-1 px-6 py-3.5 border border-gray-300 text-gray-700 rounded-xl font-semibold text-center hover:bg-gray-50 transition-all duration-200 transform hover:scale-[1.02]">
+            Cancel
+          </a>
+          <button type="submit" class="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
 {% endblock %}

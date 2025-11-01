@@ -63,18 +63,25 @@ def profile_view(request, username=None):
 # ---------------------------
 @login_required
 def edit_profile_view(request):
-    # Get or create profile for current user
     profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        form = ProfileForm(request.POST, request.FILES, instance=profile, user=request.user)
         if form.is_valid():
-            form.save()
+            profile = form.save(commit=False)
+
+            # Handle username update
+            new_username = form.cleaned_data.get("username")
+            if new_username and new_username != request.user.username:
+                request.user.username = new_username
+                request.user.save()
+
+            profile.save()
             messages.success(request, "Your profile has been updated.")
-            # Redirect to user's profile page
             return redirect('users:profile', username=request.user.username)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
-        form = ProfileForm(instance=profile)
+        form = ProfileForm(instance=profile, user=request.user)
 
     return render(request, 'users/edit_profile.html', {'form': form})
- 

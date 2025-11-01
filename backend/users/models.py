@@ -15,6 +15,8 @@ class Profile(models.Model):
     bio = models.TextField(blank=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     social_links = models.URLField(blank=True)
+    location = models.CharField(max_length=100, blank=True)  # ⬅️ ADD THIS LINE
+
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

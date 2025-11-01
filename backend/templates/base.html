@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Nexus Social{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
     <script>
         tailwind.config = {
             theme: {
@@ -37,17 +38,173 @@
             Nexus Social
         </a>
 
+        <!-- Search Bar -->
+        <div class="flex-1 max-w-2xl mx-8" x-data="{ searchOpen: false }">
+            <div class="relative">
+                <!-- Search Input -->
+                <div class="relative group">
+                    <input 
+                        type="text" 
+                        placeholder="Search profiles and posts..." 
+                        class="w-full bg-nexus-primary border border-nexus-border rounded-2xl pl-12 pr-4 py-3 text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent transition-all duration-300 backdrop-blur-sm"
+                        @focus="searchOpen = true"
+                        @blur="setTimeout(() => searchOpen = false, 150)"
+                    >
+                    <!-- Search Icon -->
+                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                        <svg class="w-5 h-5 text-nexus-textSecondary group-focus-within:text-nexus-accent transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <!-- Animated Border -->
+                    <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-nexus-accent to-nexus-highlight opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
+                    <div class="absolute inset-[1px] rounded-2xl bg-nexus-primary -z-10"></div>
+                </div>
+
+                <!-- Search Results Dropdown -->
+                <div 
+                    x-show="searchOpen" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95"
+                    class="absolute top-full left-0 right-0 mt-2 bg-nexus-secondary border border-nexus-border rounded-2xl shadow-2xl z-50 max-h-96 overflow-y-auto"
+                    style="display: none;"
+                >
+                    <!-- Recent Searches -->
+                    <div class="p-4 border-b border-nexus-border">
+                        <h3 class="text-sm font-semibold text-nexus-textSecondary mb-2">Recent Searches</h3>
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
+                                <div class="w-8 h-8 bg-nexus-accent rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm font-semibold">J</span>
+                                </div>
+                                <span class="text-nexus-textPrimary">john_doe</span>
+                            </div>
+                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
+                                <div class="w-8 h-8 bg-nexus-highlight rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm font-semibold">S</span>
+                                </div>
+                                <span class="text-nexus-textPrimary">sarah_tech</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Filters -->
+                    <div class="p-4 border-b border-nexus-border">
+                        <h3 class="text-sm font-semibold text-nexus-textSecondary mb-2">Quick Search</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-accent hover:text-white transition-all duration-200">
+                                #programming
+                            </button>
+                            <button class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-accent hover:text-white transition-all duration-200">
+                                #design
+                            </button>
+                            <button class="px-3 py-1 bg-nexus-primary border border-nexus-border rounded-full text-xs text-nexus-textPrimary hover:bg-nexus-highlight hover:text-white transition-all duration-200">
+                                #tech
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Suggested Profiles -->
+                    <div class="p-4">
+                        <h3 class="text-sm font-semibold text-nexus-textSecondary mb-2">Suggested Profiles</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-nexus-accent to-nexus-highlight rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm font-semibold">A</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-nexus-textPrimary font-medium">alex_coder</p>
+                                        <p class="text-nexus-textSecondary text-xs">Full Stack Developer</p>
+                                    </div>
+                                </div>
+                                <button class="px-3 py-1 bg-nexus-accent text-white text-xs rounded-full hover:bg-blue-600 transition-colors duration-200">
+                                    Follow
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-nexus-primary cursor-pointer transition-colors duration-150">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-nexus-highlight to-green-400 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm font-semibold">M</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-nexus-textPrimary font-medium">mia_designs</p>
+                                        <p class="text-nexus-textSecondary text-xs">UI/UX Designer</p>
+                                    </div>
+                                </div>
+                                <button class="px-3 py-1 bg-nexus-accent text-white text-xs rounded-full hover:bg-blue-600 transition-colors duration-200">
+                                    Follow
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Navigation -->
         <nav class="flex items-center space-x-4">
             {% if user.is_authenticated %}
-                <a href="/feed/" class="px-4 py-2 rounded-lg hover:bg-nexus-accent hover:text-white transition-all duration-300 font-medium">Feed</a>
-                <a href="{% url 'users:profile' username=user.username %}" class="px-4 py-2 rounded-lg hover:bg-nexus-accent hover:text-white transition-all duration-300 font-medium">Profile</a>
-                <form method="POST" action="{% url 'users:logout' %}" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-300 font-medium">
-                        Logout
+                <!-- User Dropdown -->
+                <div class="relative" x-data="{ open: false }">
+                    <!-- User Avatar Button -->
+                    <button 
+                        @click="open = !open"
+                        class="flex items-center space-x-2 bg-nexus-primary hover:bg-nexus-border rounded-full px-3 py-2 transition-all duration-200 border border-nexus-border"
+                    >
+                        {% if user.profile.profile_pic %}
+                            <img src="{{ user.profile.profile_pic.url }}" 
+                                 alt="{{ user.username }}" 
+                                 class="w-8 h-8 rounded-full border-2 border-nexus-accent object-cover">
+                        {% else %}
+                            <div class="w-8 h-8 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                                {{ user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <span class="text-nexus-textPrimary font-medium">{{ user.username }}</span>
+                        <svg class="w-4 h-4 text-nexus-textSecondary transition-transform duration-200" 
+                             :class="{ 'rotate-180': open }" 
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
                     </button>
-                </form>
+
+                    <!-- Dropdown Menu -->
+                    <div 
+                        x-show="open" 
+                        @click.away="open = false"
+                        class="absolute right-0 mt-2 w-48 bg-nexus-secondary border border-nexus-border rounded-xl shadow-2xl py-2 z-50"
+                        style="display: none;"
+                    >
+                        <!-- My Profile -->
+                        <a href="{% url 'users:profile' username=user.username %}" 
+                           class="flex items-center space-x-2 px-4 py-2 text-nexus-textPrimary hover:bg-nexus-border transition-colors duration-150">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span>My Profile</span>
+                        </a>
+
+                        <!-- Divider -->
+                        <div class="border-t border-nexus-border my-2"></div>
+
+                        <!-- Logout -->
+                        <form method="post" action="{% url 'users:logout' %}" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="flex items-center space-x-2 w-full px-4 py-2 text-red-500 hover:bg-red-900 transition-colors duration-150 text-left">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
             {% else %}
                 <a href="/" class="px-4 py-2 rounded-lg hover:bg-nexus-accent hover:text-white transition-all duration-300 font-medium">Home</a>
                 <a href="{% url 'users:login' %}" class="px-4 py-2 rounded-lg hover:bg-nexus-accent hover:text-white transition-all duration-300 font-medium">Login</a>
