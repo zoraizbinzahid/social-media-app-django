@@ -1,0 +1,88 @@
+<div class="bg-nexus-secondary rounded-2xl border border-nexus-border shadow-lg overflow-hidden">
+    <!-- Post Header -->
+    <div class="flex items-center justify-between p-6 border-b border-nexus-border">
+        <div class="flex items-center space-x-4">
+            <a href="{% url 'users:profile' username=post.author.username %}">
+                {% if post.author.profile.profile_pic %}
+                    <img src="{{ post.author.profile.profile_pic.url }}" 
+                         alt="{{ post.author.username }}" 
+                         class="w-10 h-10 rounded-full border-2 border-nexus-accent object-cover">
+                {% else %}
+                    <div class="w-10 h-10 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                        {{ post.author.username|first|upper }}
+                    </div>
+                {% endif %}
+            </a>
+            <div>
+                <a href="{% url 'users:profile' username=post.author.username %}" 
+                   class="font-semibold text-nexus-textPrimary hover:text-nexus-accent transition-colors duration-200">
+                    {{ post.author.username }}
+                </a>
+                <p class="text-nexus-textSecondary text-sm">{{ post.created_at|timesince }} ago</p>
+            </div>
+        </div>
+        
+        <!-- Post Options -->
+        {% if user == post.author %}
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" class="p-2 text-nexus-textSecondary hover:text-nexus-textPrimary transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                </svg>
+            </button>
+            
+            <div x-show="open" @click.away="open = false" 
+                 class="absolute right-0 mt-2 w-32 bg-nexus-primary border border-nexus-border rounded-lg shadow-lg py-1 z-10"
+                 style="display: none;">
+                <a href="{% url 'posts:delete_post' pk=post.pk %}" 
+                   class="block px-4 py-2 text-red-500 hover:bg-red-900 transition-colors duration-150 text-sm">
+                    Delete
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Post Content -->
+    <div class="p-6">
+        <p class="text-nexus-textPrimary whitespace-pre-line">{{ post.content }}</p>
+        
+        {% if post.image %}
+        <div class="mt-4 rounded-xl overflow-hidden border border-nexus-border">
+            <img src="{{ post.image.url }}" 
+                 alt="Post image" 
+                 class="w-full h-auto object-cover">
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Post Engagement -->
+    <div class="px-6 py-4 border-t border-nexus-border bg-nexus-primary">
+        <div class="flex items-center justify-between text-nexus-textSecondary">
+            <!-- Likes -->
+            <button class="flex items-center space-x-2 hover:text-red-500 transition-colors duration-200 like-btn" 
+                    data-post-id="{{ post.pk }}">
+                <svg class="w-5 h-5" fill="{% if user in post.likes.all %}currentColor{% else %}none{% endif %}" 
+                     stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                <span class="like-count">{{ post.likes.count }}</span>
+            </button>
+
+            <!-- Comments -->
+            <button class="flex items-center space-x-2 hover:text-nexus-accent transition-colors duration-200 comment-toggle">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <span>{{ post.comments.count }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Comments Section (Initially Hidden) -->
+    <div class="comment-section border-t border-nexus-border hidden">
+        {% include "posts/includes/comment_section.html" with post=post %}
+    </div>
+</div>

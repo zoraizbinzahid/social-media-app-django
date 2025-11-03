@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Create Post - Nexus Social{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-nexus-textPrimary">Create Post</h1>
+        <p class="text-nexus-textSecondary mt-2">Share your thoughts with the community</p>
+    </div>
+
+    <!-- Create Post Card -->
+    <div class="bg-nexus-secondary rounded-2xl border border-nexus-border shadow-lg overflow-hidden">
+        <!-- Author Info -->
+        <div class="flex items-center space-x-4 p-6 border-b border-nexus-border">
+            {% if user.profile.profile_pic %}
+                <img src="{{ user.profile.profile_pic.url }}" 
+                     alt="{{ user.username }}" 
+                     class="w-12 h-12 rounded-full border-2 border-nexus-accent object-cover">
+            {% else %}
+                <div class="w-12 h-12 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                    {{ user.username|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h3 class="font-semibold text-nexus-textPrimary">{{ user.username }}</h3>
+                <p class="text-nexus-textSecondary text-sm">Posting to Nexus Social</p>
+            </div>
+        </div>
+
+        <!-- Post Form -->
+        <form method="post" enctype="multipart/form-data" class="p-6 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Content Field -->
+            <div class="space-y-3">
+                <textarea 
+                    name="content" 
+                    rows="4"
+                    placeholder="What's on your mind?"
+                    class="w-full px-4 py-3 bg-nexus-primary border border-nexus-border rounded-xl text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent transition-all duration-200 resize-none"
+                >{{ form.content.value|default:'' }}</textarea>
+                {% if form.content.errors %}
+                <p class="text-red-500 text-sm">{{ form.content.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Image Upload -->
+            <div class="space-y-3">
+                <label class="block text-sm font-semibold text-nexus-textPrimary">Add Image (Optional)</label>
+                <div class="flex items-center space-x-4">
+                    <label for="id_image" class="cursor-pointer">
+                        <div class="flex items-center space-x-2 px-4 py-3 bg-nexus-primary border-2 border-nexus-border border-dashed rounded-xl hover:border-nexus-accent transition-all duration-200">
+                            <svg class="w-5 h-5 text-nexus-textSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-nexus-textSecondary font-medium">Choose image</span>
+                        </div>
+                        <input type="file" name="image" id="id_image" class="hidden" accept="image/*">
+                    </label>
+                    <span class="text-sm text-nexus-textSecondary" id="file-name">No file chosen</span>
+                </div>
+                {% if form.image.errors %}
+                <p class="text-red-500 text-sm">{{ form.image.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex space-x-4 pt-6 border-t border-nexus-border">
+                <a href="{% url 'posts:feed' %}" 
+                   class="flex-1 px-6 py-3 border border-nexus-border text-nexus-textPrimary rounded-xl font-semibold text-center hover:bg-nexus-primary transition-all duration-200">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="flex-1 px-6 py-3 bg-nexus-accent text-white rounded-xl font-semibold hover:bg-blue-600 transition-all duration-200 transform hover:scale-[1.02]">
+                    Post
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// File name display
+document.getElementById('id_image').addEventListener('change', function(e) {
+    const fileName = e.target.files[0] ? e.target.files[0].name : 'No file chosen';
+    document.getElementById('file-name').textContent = fileName;
+});
+</script>
+{% endblock %}

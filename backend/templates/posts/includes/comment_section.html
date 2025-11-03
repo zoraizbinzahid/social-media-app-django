@@ -1,0 +1,188 @@
+<div class="p-6 bg-nexus-primary">
+    <!-- Existing Comments -->
+    <div class="space-y-4 mb-6 max-h-64 overflow-y-auto 
+                [&::-webkit-scrollbar]:w-2
+                [&::-webkit-scrollbar-track]:bg-nexus-primary
+                [&::-webkit-scrollbar-thumb]:bg-nexus-accent
+                [&::-webkit-scrollbar-thumb]:rounded-full
+                [&::-webkit-scrollbar-thumb:hover]:bg-blue-600
+                scrollbar-width:thin
+                scrollbar-color:rgb(59 130 246) rgb(31 41 55)">
+        {% for comment in post.comments.all %}
+        <div class="flex space-x-3 group" x-data="{ editing: false }">
+            <a href="{% url 'users:profile' username=comment.author.username %}">
+                {% if comment.author.profile.profile_pic %}
+                    <img src="{{ comment.author.profile.profile_pic.url }}" 
+                         alt="{{ comment.author.username }}" 
+                         class="w-8 h-8 rounded-full border-2 border-nexus-accent object-cover">
+                {% else %}
+                    <div class="w-8 h-8 rounded-full bg-nexus-accent flex items-center justify-center text-white text-xs font-semibold">
+                        {{ comment.author.username|first|upper }}
+                    </div>
+                {% endif %}
+            </a>
+            <div class="flex-1">
+                <!-- Edit Mode -->
+                <form x-show="editing" @submit.prevent="editing = false" 
+                      class="edit-comment-form mb-2" data-comment-id="{{ comment.pk }}">
+                    {% csrf_token %}
+                    <input type="text" 
+                           value="{{ comment.content }}"
+                           class="w-full px-3 py-2 bg-nexus-secondary border border-nexus-accent rounded-lg text-nexus-textPrimary text-sm">
+                    <div class="flex space-x-2 mt-2">
+                        <button type="submit" 
+                                class="px-3 py-1 bg-nexus-accent text-white text-xs rounded-lg hover:bg-blue-600">
+                            Save
+                        </button>
+                        <button type="button" @click="editing = false"
+                                class="px-3 py-1 bg-nexus-border text-nexus-textPrimary text-xs rounded-lg hover:bg-gray-600">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Display Mode -->
+                <div x-show="!editing" class="bg-nexus-secondary rounded-xl p-3 group-hover:bg-nexus-border transition-colors duration-200">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center space-x-2">
+                            <a href="{% url 'users:profile' username=comment.author.username %}" 
+                               class="font-semibold text-nexus-textPrimary text-sm hover:text-nexus-accent">
+                                {{ comment.author.username }}
+                            </a>
+                            <span class="text-nexus-textSecondary text-xs">{{ comment.created_at|timesince }} ago</span>
+                            {% if comment.is_edited %}
+                            <span class="text-nexus-textSecondary text-xs">(edited)</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Comment Options (Show only for comment author) -->
+                        {% if user == comment.author %}
+                        <div class="relative opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button class="p-1 text-nexus-textSecondary hover:text-nexus-textPrimary"
+                                    @click="$refs.menu.classList.toggle('hidden')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                                </svg>
+                            </button>
+                            
+                            <div class="hidden absolute right-0 mt-1 w-24 bg-nexus-primary border border-nexus-border rounded-lg shadow-lg py-1 z-10"
+                                 x-ref="menu">
+                                <button @click="editing = true" 
+                                        class="block w-full text-left px-3 py-1 text-nexus-textPrimary hover:bg-nexus-secondary text-xs">
+                                    Edit
+                                </button>
+                                <button class="delete-comment-btn block w-full text-left px-3 py-1 text-red-500 hover:bg-red-900 text-xs"
+                                        data-comment-id="{{ comment.pk }}">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-nexus-textPrimary text-sm">{{ comment.content }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-4">
+            <p class="text-nexus-textSecondary text-sm">No comments yet. Be the first to comment!</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Add Comment Form -->
+    <form class="add-comment-form flex space-x-3" data-post-id="{{ post.pk }}">
+        {% csrf_token %}
+        <input type="text" 
+               name="content"
+               placeholder="Write a comment..." 
+               class="comment-input flex-1 px-4 py-2 bg-nexus-secondary border border-nexus-border rounded-full text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent text-sm"
+               required>
+        <button type="submit" 
+                class="px-4 py-2 bg-nexus-accent text-white rounded-full hover:bg-blue-600 transition-colors duration-200 text-sm font-medium">
+            Post
+        </button>
+    </form>
+</div>
+
+<script>
+// Clear comment input after successful submission and handle AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    // Add comment functionality
+    document.querySelectorAll('.add-comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const postId = this.dataset.postId;
+            const commentInput = this.querySelector('.comment-input');
+            
+            // FIXED URL - removed /posts/
+            fetch(`/${postId}/comment/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    commentInput.value = ''; // Clear the input
+                    location.reload(); // Reload to show new comment
+                }
+            });
+        });
+    });
+    
+    // Edit comment functionality
+    document.querySelectorAll('.edit-comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.commentId;
+            const newContent = this.querySelector('input[type="text"]').value;
+            const formData = new FormData(this);
+            formData.append('content', newContent);
+            
+            // FIXED URL - removed /posts/
+            fetch(`/comment/${commentId}/update/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Reload to show updated comment
+                }
+            });
+        });
+    });
+    
+    // Delete comment functionality
+    document.querySelectorAll('.delete-comment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            
+            if (confirm('Are you sure you want to delete this comment?')) {
+                // FIXED URL - removed /posts/
+                fetch(`/comment/${commentId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // Reload to remove comment
+                    }
+                });
+            }
+        });
+    });
+});
+</script>

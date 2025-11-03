@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Feed - Nexus Social{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Create Post Card -->
+    <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border shadow-lg">
+        <div class="flex items-center space-x-4">
+            {% if user.profile.profile_pic %}
+                <img src="{{ user.profile.profile_pic.url }}" 
+                     alt="{{ user.username }}" 
+                     class="w-12 h-12 rounded-full border-2 border-nexus-accent object-cover">
+            {% else %}
+                <div class="w-12 h-12 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                    {{ user.username|first|upper }}
+                </div>
+            {% endif %}
+            <a href="{% url 'posts:create_post' %}" 
+               class="flex-1 bg-nexus-primary border border-nexus-border rounded-full px-6 py-3 text-nexus-textSecondary hover:text-nexus-textPrimary hover:border-nexus-accent transition-all duration-200 cursor-pointer">
+                What's on your mind?
+            </a>
+        </div>
+    </div>
+
+    <!-- Posts Feed -->
+    <div class="space-y-6">
+        {% for post in posts %}
+            {% include "posts/includes/post_card.html" with post=post %}
+        {% empty %}
+            <!-- Empty State -->
+            <div class="bg-nexus-secondary rounded-2xl p-12 text-center border border-nexus-border">
+                <div class="text-6xl mb-4">📝</div>
+                <h3 class="text-xl font-semibold text-nexus-textPrimary mb-2">No posts yet</h3>
+                <p class="text-nexus-textSecondary mb-6">Be the first to share something!</p>
+                <a href="{% url 'posts:create_post' %}" 
+                   class="inline-flex items-center space-x-2 bg-nexus-accent text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-all duration-200 transform hover:scale-105">
+                    <span>Create First Post</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
