@@ -33,5 +33,15 @@ def follow_loggle(request, username):
     return redirect('users:profile', username=username)
 
 
-
+@login_required
+def followers_list(request, username):
+    user = get_object_or_404(User, username=username)
+    followers = User.objects.filter(following_relationships__following=user)
     
+    return render(request, 'followers/followers_list.html', {
+        'profile_user': user,
+        'users': followers,
+        'page_type': 'followers',
+        'followers_count': user.follower_relationships.count(),
+        'following_count': user.following_relationships.count(),
+    })
