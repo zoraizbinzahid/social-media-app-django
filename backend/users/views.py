@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, ProfileForm
 from .models import CustomUser, Profile
 from django.db.models import Q 
-
-
+from posts.models import Post
+from followers.models import Follow
 
 def search_view(request):
     query = request.GET.get('q', '')
@@ -70,14 +70,33 @@ def register_view(request):
 @login_required
 def profile_view(request, username=None):
     if username:
-        user = get_object_or_404(CustomUser, username=username)
+        user_obj = get_object_or_404(CustomUser, username=username)
     else:
-        user = request.user
+        user_obj = request.user
 
     # Ensure profile exists
-    Profile.objects.get_or_create(user=user)
+    Profile.objects.get_or_create(user=user_obj)
+    
+    # Calculate real counts
+    posts_count = Post.objects.filter(author=user_obj).count()
+    followers_count = user_obj.follower_relationships.count()
+    following_count = user_obj.following_relationships.count()
+    
+    # Check if current user follows this profile user
+    is_following = False
+    if request.user.is_authenticated and request.user != user_obj:
+        is_following = Follow.objects.filter(
+            follower=request.user, 
+            following=user_obj
+        ).exists()
 
-    return render(request, 'users/profile.html', {'user_obj': user})
+    return render(request, 'users/profile.html', {
+        'user_obj': user_obj,
+        'posts_count': posts_count,
+        'followers_count': followers_count,
+        'following_count': following_count,
+        'is_following': is_following,
+    })
 
 
 # ---------------------------
@@ -107,32 +126,3 @@ def edit_profile_view(request):
         form = ProfileForm(instance=profile, user=request.user)
 
     return render(request, 'users/edit_profile.html', {'form': form})
-
-
-
-from django.db.models import Q
-
-def search_view(request):
-    query = request.GET.get('q', '')
-    results = {
-        'users': [],
-        'posts': []
-    }
-    
-    if query:
-        # Search users
-        results['users'] = CustomUser.objects.filter(
-            Q(username__icontains=query) | 
-            Q(profile__bio__icontains=query)
-        ).select_related('profile')
-        
-        # Search posts (when you create posts app)
-        # results['posts'] = Post.objects.filter(
-        #     Q(content__icontains=query) |
-        #     Q(author__username__icontains=query)
-        # )
-    
-    return render(request, 'users/search_results.html', {
-        'query': query,
-        'results': results
-    })

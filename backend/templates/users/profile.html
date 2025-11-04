@@ -24,12 +24,6 @@
                         class="w-32 h-32 rounded-full object-cover border-4 border-nexus-accent shadow-lg"
                     >
                 {% endif %}
-
-                {% if user_obj.profile.is_verified %}
-                <div class="absolute bottom-2 right-2 w-8 h-8 bg-nexus-highlight rounded-full flex items-center justify-center border-2 border-nexus-secondary">
-                    <span class="text-white text-sm">✓</span>
-                </div>
-                {% endif %}
             </div>
 
             <!-- Profile Info -->
@@ -38,11 +32,6 @@
                     <h1 class="text-3xl font-bold bg-gradient-to-r from-nexus-textPrimary to-nexus-accent bg-clip-text text-transparent">
                         {{ user_obj.username }}
                     </h1>
-                    {% if user_obj.profile.is_verified %}
-                    <span class="inline-flex items-center px-3 py-1 bg-nexus-highlight text-white text-sm rounded-full font-medium mt-2 md:mt-0">
-                        <span class="mr-1">✓</span> Verified
-                    </span>
-                    {% endif %}
                 </div>
 
                 <p class="text-nexus-textSecondary text-lg mb-4">{{ user_obj.email }}</p>
@@ -58,17 +47,23 @@
                 <!-- Stats -->
                 <div class="flex justify-center md:justify-start space-x-8 text-center">
                     <div>
-                        <p class="text-2xl font-bold text-nexus-textPrimary">142</p>
+                        <p class="text-2xl font-bold text-nexus-textPrimary">{{ posts_count }}</p>
                         <p class="text-nexus-textSecondary text-sm">Posts</p>
                     </div>
-                    <div>
-                        <p class="text-2xl font-bold text-nexus-textPrimary">1.2K</p>
-                        <p class="text-nexus-textSecondary text-sm">Followers</p>
-                    </div>
-                    <div>
-                        <p class="text-2xl font-bold text-nexus-textPrimary">856</p>
-                        <p class="text-nexus-textSecondary text-sm">Following</p>
-                    </div>
+                    <a href="{% url 'followers:followers_list' username=user_obj.username %}" 
+                       class="hover:scale-105 transition-transform duration-200">
+                        <div>
+                            <p class="text-2xl font-bold text-nexus-textPrimary">{{ followers_count }}</p>
+                            <p class="text-nexus-textSecondary text-sm">Followers</p>
+                        </div>
+                    </a>
+                    <a href="{% url 'followers:following_list' username=user_obj.username %}" 
+                       class="hover:scale-105 transition-transform duration-200">
+                        <div>
+                            <p class="text-2xl font-bold text-nexus-textPrimary">{{ following_count }}</p>
+                            <p class="text-nexus-textSecondary text-sm">Following</p>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -81,8 +76,10 @@
                 Edit Profile
             </a>
             {% else %}
-            <button class="flex-1 bg-nexus-accent hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02]">
-                Follow
+            <button class="follow-btn flex-1 {% if is_following %}bg-nexus-border text-nexus-textPrimary border border-nexus-border{% else %}bg-nexus-accent text-white{% endif %} font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02]"
+                    data-user-id="{{ user_obj.id }}"
+                    data-username="{{ user_obj.username }}">
+                {% if is_following %}Unfollow{% else %}Follow{% endif %}
             </button>
             <button class="flex-1 bg-nexus-secondary border border-nexus-accent text-nexus-accent hover:bg-nexus-accent hover:text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300">
                 Message
@@ -135,26 +132,73 @@
 
         <!-- Recent Activity -->
         <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border">
-            <h3 class="text-xl font-semibold text-nexus-textPrimary mb-4">Recent Activity</h3>
-            <div class="space-y-3">
-                <div class="flex items-center space-x-3 text-sm">
-                    <div class="w-2 h-2 bg-nexus-highlight rounded-full"></div>
-                    <span class="text-nexus-textPrimary">Liked a post</span>
-                    <span class="text-nexus-textSecondary">2 hours ago</span>
+            <h3 class="text-xl font-semibold text-nexus-textPrimary mb-4">Recent Posts</h3>
+            <div class="space-y-4">
+                {% for post in user_obj.posts.all|slice:":3" %}
+                <div class="bg-nexus-primary rounded-xl p-4 border border-nexus-border">
+                    <p class="text-nexus-textPrimary text-sm mb-2">{{ post.content|truncatewords:20 }}</p>
+                    <div class="flex items-center justify-between text-xs text-nexus-textSecondary">
+                        <span>{{ post.created_at|timesince }} ago</span>
+                        <div class="flex space-x-3">
+                            <span>❤️ {{ post.likes.count }}</span>
+                            <span>💬 {{ post.comments.count }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-3 text-sm">
-                    <div class="w-2 h-2 bg-nexus-accent rounded-full"></div>
-                    <span class="text-nexus-textPrimary">Commented on photo</span>
-                    <span class="text-nexus-textSecondary">5 hours ago</span>
-                </div>
-                <div class="flex items-center space-x-3 text-sm">
-                    <div class="w-2 h-2 bg-nexus-highlight rounded-full"></div>
-                    <span class="text-nexus-textPrimary">Started following Alex</span>
-                    <span class="text-nexus-textSecondary">1 day ago</span>
-                </div>
+                {% empty %}
+                <p class="text-nexus-textSecondary italic text-center py-4">No posts yet</p>
+                {% endfor %}
             </div>
         </div>
     </div>
 
 </div>
+
+<!-- Follow JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const followBtn = document.querySelector('.follow-btn');
+    
+    if (followBtn) {
+        followBtn.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const username = this.dataset.username;
+            
+            fetch(`/follow/${username}/follow/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                // Update button text and style
+                if (data.is_following) {
+                    this.textContent = 'Unfollow';
+                    this.classList.remove('bg-nexus-accent', 'text-white');
+                    this.classList.add('bg-nexus-border', 'text-nexus-textPrimary', 'border', 'border-nexus-border');
+                } else {
+                    this.textContent = 'Follow';
+                    this.classList.remove('bg-nexus-border', 'text-nexus-textPrimary', 'border', 'border-nexus-border');
+                    this.classList.add('bg-nexus-accent', 'text-white');
+                }
+                
+                // Update counts on the page
+                document.querySelector('a[href*="followers"] .text-2xl').textContent = data.followers_count;
+                document.querySelector('a[href*="following"] .text-2xl').textContent = data.following_count;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Something went wrong. Please try again.');
+            });
+        });
+    }
+});
+</script>
 {% endblock %}
