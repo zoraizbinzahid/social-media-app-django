@@ -45,3 +45,33 @@ def followers_list(request, username):
         'followers_count': user.follower_relationships.count(),
         'following_count': user.following_relationships.count(),
     })
+
+
+@login_required
+def following_list(request, username):
+    user = get_object_or_404(User, username=username)
+    following = User.objects.filter(follower_relationships__follower=user)
+
+    return render(request, 'followers/following_list.html', {
+        'profile_user': user,
+        'users': following,
+        'page_type': 'following',
+        'followers_count': user.follower_relationships.count(),
+        'following_count': user.following_relationships.count(),
+    })
+
+
+#helper function to use in templates
+
+def get_followers_count(user):
+    return user.follower_relationships.count()
+
+def get_following_count(user):
+    return user.follwing_relationships.count()
+
+def get_posts_count(user):
+    from posts.models import Post
+    return Post.objects.filter(author=user).count()
+
+def is_following(current_user, target_user):
+    return Follow.objects.filter(follower=current_user, following=target_user).exists()
