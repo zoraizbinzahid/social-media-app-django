@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include(('users.urls', 'users'), namespace='users')),
     path('landing/', TemplateView.as_view(template_name='core/landing.html'), name='landing'),
+    path('follow/', include(('followers.urls', 'followers'), namespace='followers')),
     path('', include(('posts.urls', 'posts'), namespace='posts')), 
     
     
