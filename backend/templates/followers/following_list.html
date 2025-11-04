@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Following - {{ profile_user.username }} - Nexus Social{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border mb-6">
+        <div class="flex items-center space-x-4 mb-4">
+            <a href="{% url 'users:profile' username=profile_user.username %}" class="flex items-center space-x-3 text-nexus-textPrimary hover:text-nexus-accent transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <img src="{% if profile_user.profile.profile_pic %}{{ profile_user.profile.profile_pic.url }}{% else %}{% static 'default.jpg' %}{% endif %}" 
+                     class="w-10 h-10 rounded-full border-2 border-nexus-accent object-cover">
+                <span class="font-semibold">{{ profile_user.username }}</span>
+            </a>
+        </div>
+        <h1 class="text-2xl font-bold text-nexus-textPrimary">Following</h1>
+        <p class="text-nexus-textSecondary">{{ following_count }} people</p>
+    </div>
+
+    <!-- Following List -->
+    <div class="space-y-3">
+        {% for user in users %}
+        <div class="bg-nexus-secondary rounded-xl p-4 border border-nexus-border flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'users:profile' username=user.username %}">
+                    {% if user.profile.profile_pic %}
+                        <img src="{{ user.profile.profile_pic.url }}" 
+                             alt="{{ user.username }}" 
+                             class="w-12 h-12 rounded-full border-2 border-nexus-accent object-cover">
+                    {% else %}
+                        <div class="w-12 h-12 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                            {{ user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                </a>
+                <div>
+                    <a href="{% url 'users:profile' username=user.username %}" 
+                       class="font-semibold text-nexus-textPrimary hover:text-nexus-accent block">
+                        {{ user.username }}
+                    </a>
+                    {% if user.profile.bio %}
+                    <p class="text-nexus-textSecondary text-sm mt-1">{{ user.profile.bio|truncatewords:10 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if user != request.user %}
+            <button class="follow-btn px-4 py-2 text-sm rounded-full bg-nexus-accent text-white border border-nexus-accent transition-colors hover:bg-blue-600"
+                    data-user-id="{{ user.id }}"
+                    data-username="{{ user.username }}">
+                Follow
+            </button>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="bg-nexus-secondary rounded-2xl p-12 text-center border border-nexus-border">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-semibold text-nexus-textPrimary mb-2">Not following anyone</h3>
+            <p class="text-nexus-textSecondary">When {{ profile_user.username }} follows someone, they'll appear here.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Follow JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.follow-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const username = this.dataset.username;
+            
+            fetch(`/follow/${username}/follow/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                // Update button text
+                if (data.is_following) {
+                    this.textContent = 'Unfollow';
+                    this.classList.remove('bg-nexus-accent', 'text-white');
+                    this.classList.add('bg-nexus-border', 'text-nexus-textPrimary', 'border', 'border-nexus-border');
+                } else {
+                    this.textContent = 'Follow';
+                    this.classList.remove('bg-nexus-border', 'text-nexus-textPrimary', 'border', 'border-nexus-border');
+                    this.classList.add('bg-nexus-accent', 'text-white');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Something went wrong. Please try again.');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
