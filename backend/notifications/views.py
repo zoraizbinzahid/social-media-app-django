@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.utils import timezone
+from datetime import datetime
 from .models import Notification
 
 @login_required
@@ -14,13 +16,37 @@ def api_notification_list(request):
     
     notification_data = []
     for notification in notifications:
+        # Calculate relative time
+        now = timezone.now()
+        diff = now - notification.created_at
+        
+        if diff.days > 0:
+            if diff.days == 1:
+                timestamp = '1 day ago'
+            else:
+                timestamp = f'{diff.days} days ago'
+        elif diff.seconds >= 3600:
+            hours = diff.seconds // 3600
+            if hours == 1:
+                timestamp = '1 hour ago'
+            else:
+                timestamp = f'{hours} hours ago'
+        elif diff.seconds >= 60:
+            minutes = diff.seconds // 60
+            if minutes == 1:
+                timestamp = '1 minute ago'
+            else:
+                timestamp = f'{minutes} minutes ago'
+        else:
+            timestamp = 'Just now'
+        
         notification_data.append({
             'id': notification.id,
             'message': notification.message,
             'notification_type': notification.notification_type,
             'sender_name': notification.sender.username if notification.sender else None,
             'sender_profile_pic': notification.sender.profile.profile_pic.url if notification.sender and hasattr(notification.sender, 'profile') and notification.sender.profile.profile_pic else None,
-            'timestamp': notification.created_at.strftime('%b %d, %Y %I:%M %p'),
+            'timestamp': timestamp,
             'unread': not notification.is_read,
             'post_id': notification.post.id if notification.post else None,
         })

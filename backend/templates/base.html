@@ -125,8 +125,11 @@
                          @click.away="notificationsOpen = false"
                          class="absolute right-0 mt-2 w-80 bg-nexus-secondary border border-nexus-border rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto"
                          style="display: none;">
-                        <div class="p-4 border-b border-nexus-border">
+                        <div class="p-4 border-b border-nexus-border flex justify-between items-center">
                             <h3 class="font-semibold text-nexus-textPrimary">Notifications</h3>
+                            <button onclick="loadNotifications()" class="text-nexus-textSecondary hover:text-nexus-accent text-sm">
+                                Refresh
+                            </button>
                         </div>
                         <div id="notifications-list" class="p-2">
                             <div class="text-center text-nexus-textSecondary py-4">
@@ -134,8 +137,8 @@
                             </div>
                         </div>
                         <div class="p-2 border-t border-nexus-border">
-                            <a href="/notifications/" class="block text-center text-nexus-accent hover:text-blue-400 text-sm py-2">
-                                View All Notifications
+                            <a href="#" class="block text-center text-nexus-accent hover:text-blue-400 text-sm py-2" onclick="showNotificationSetupInfo()">
+                                Setup Instructions
                             </a>
                         </div>
                     </div>
@@ -226,7 +229,7 @@
 </footer>
 
 <script>
-// Notification functionality
+// Notification functionality with fallback
 function loadNotifications() {
     console.log('Loading notifications...');
     
@@ -234,15 +237,16 @@ function loadNotifications() {
     const notificationsList = document.getElementById('notifications-list');
     notificationsList.innerHTML = '<div class="text-center text-nexus-textSecondary py-4"><p>Loading notifications...</p></div>';
     
+    // Try to fetch notifications
     fetch('/notifications/api/')
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
-            console.log('Notifications data:', data);
+            console.log('Notifications data received:', data);
             const notificationCount = document.getElementById('notification-count');
             
             if (data.notifications && data.notifications.length > 0) {
@@ -250,59 +254,140 @@ function loadNotifications() {
                 data.notifications.forEach(notification => {
                     const notificationElement = document.createElement('div');
                     notificationElement.className = 'p-3 border-b border-nexus-border last:border-b-0 hover:bg-nexus-primary transition-colors cursor-pointer';
+                    
+                    // Get appropriate icon based on notification type
+                    let iconClass = 'text-nexus-accent';
+                    let iconSvg = '';
+                    
+                    switch(notification.notification_type) {
+                        case 'post_like':
+                            iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>';
+                            iconClass = 'text-red-500';
+                            break;
+                        case 'post_comment':
+                            iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>';
+                            iconClass = 'text-blue-500';
+                            break;
+                        case 'new_follower':
+                            iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>';
+                            iconClass = 'text-green-500';
+                            break;
+                        case 'new_message':
+                            iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>';
+                            iconClass = 'text-purple-500';
+                            break;
+                        default:
+                            iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.24 8.56a5.97 5.97 0 01-4.66-6.24M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+                    }
+                    
                     notificationElement.innerHTML = `
                         <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0">
+                            <div class="flex-shrink-0 relative">
                                 ${notification.sender_profile_pic ? 
-                                    `<img src="${notification.sender_profile_pic}" class="w-8 h-8 rounded-full">` :
-                                    `<div class="w-8 h-8 rounded-full bg-nexus-accent flex items-center justify-center text-white text-xs font-semibold">
+                                    `<img src="${notification.sender_profile_pic}" class="w-10 h-10 rounded-full border border-nexus-border">` :
+                                    `<div class="w-10 h-10 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold border border-nexus-border">
                                         ${notification.sender_name ? notification.sender_name.charAt(0).toUpperCase() : 'U'}
                                     </div>`
                                 }
+                                <div class="absolute -bottom-1 -right-1 bg-nexus-secondary rounded-full p-1 border border-nexus-border">
+                                    <svg class="w-3 h-3 ${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        ${iconSvg}
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm text-nexus-textPrimary">${notification.message}</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-nexus-textPrimary break-words">${notification.message}</p>
                                 <p class="text-xs text-nexus-textSecondary mt-1">${notification.timestamp}</p>
                             </div>
-                            ${notification.unread ? '<div class="w-2 h-2 bg-nexus-accent rounded-full"></div>' : ''}
+                            ${notification.unread ? '<div class="w-2 h-2 bg-nexus-accent rounded-full flex-shrink-0 mt-2"></div>' : ''}
                         </div>
                     `;
+                    
+                    // Add click handler for notifications
+                    if (notification.notification_type === 'new_message' && notification.sender_name) {
+                        notificationElement.addEventListener('click', function() {
+                            // Redirect to start conversation with this user
+                            window.location.href = `/chat/start/${notification.sender_name}/`;
+                        });
+                    } else if (notification.post_id) {
+                        notificationElement.addEventListener('click', function() {
+                            window.location.href = `/posts/${notification.post_id}/`;
+                        });
+                    } else if (notification.notification_type === 'new_follower' && notification.sender_name) {
+                        notificationElement.addEventListener('click', function() {
+                            window.location.href = `/users/${notification.sender_name}/`;
+                        });
+                    }
+                    
                     notificationsList.appendChild(notificationElement);
                 });
                 
                 // Update notification count
                 const unreadCount = data.notifications.filter(n => n.unread).length;
                 if (unreadCount > 0) {
-                    notificationCount.textContent = unreadCount;
+                    notificationCount.textContent = unreadCount > 99 ? '99+' : unreadCount;
                     notificationCount.classList.remove('hidden');
                 } else {
                     notificationCount.classList.add('hidden');
                 }
             } else {
-                notificationsList.innerHTML = `
-                    <div class="text-center text-nexus-textSecondary py-4">
-                        <p>No new notifications</p>
-                    </div>
-                `;
-                notificationCount.classList.add('hidden');
+                showNoNotifications();
             }
         })
         .catch(error => {
             console.error('Error loading notifications:', error);
-            notificationsList.innerHTML = `
-                <div class="text-center text-nexus-textSecondary py-4">
-                    <p>Error loading notifications</p>
-                    <p class="text-xs mt-1">Check console for details</p>
-                </div>
-            `;
+            showNotificationSetupRequired();
         });
+}
+
+function showNoNotifications() {
+    const notificationsList = document.getElementById('notifications-list');
+    notificationsList.innerHTML = `
+        <div class="text-center text-nexus-textSecondary py-8">
+            <svg class="w-12 h-12 mx-auto mb-3 text-nexus-textSecondary opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.24 8.56a5.97 5.97 0 01-4.66-6.24M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="font-medium">No notifications</p>
+            <p class="text-sm mt-1">When you get notifications, they'll appear here.</p>
+        </div>
+    `;
+    document.getElementById('notification-count').classList.add('hidden');
+}
+
+function showNotificationSetupRequired() {
+    const notificationsList = document.getElementById('notifications-list');
+    notificationsList.innerHTML = `
+        <div class="text-center text-nexus-textSecondary py-4">
+            <svg class="w-12 h-12 mx-auto mb-3 text-nexus-textSecondary opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <p class="font-medium mb-2">Notifications Not Set Up</p>
+            <p class="text-sm mb-3">The notifications system needs to be configured.</p>
+            <button onclick="showNotificationSetupInfo()" class="px-4 py-2 bg-nexus-accent text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                Setup Instructions
+            </button>
+        </div>
+    `;
+    document.getElementById('notification-count').classList.add('hidden');
+}
+
+function showNotificationSetupInfo() {
+    alert(`To set up notifications:
+
+1. Make sure 'notifications' is in INSTALLED_APPS in settings.py
+2. Run: python manage.py makemigrations notifications
+3. Run: python manage.py migrate
+4. Add notifications URLs to your main urls.py:
+   path('notifications/', include('notifications.urls'))
+
+Check the browser console for detailed error information.`);
 }
 
 // Load notifications count on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Only load notifications if user is authenticated
     {% if user.is_authenticated %}
-    // Load notifications initially
+    // Load notifications on page load
     loadNotifications();
     
     // Set up polling for new notifications (every 30 seconds)
@@ -404,7 +489,10 @@ document.addEventListener('keypress', function(e) {
 // Function to add comment to UI without page reload
 function addCommentToUI(postId, content) {
     const commentSection = document.querySelector(`[data-post-id="${postId}"] .comment-section`);
+    if (!commentSection) return;
+    
     const commentsContainer = commentSection.querySelector('.space-y-4');
+    if (!commentsContainer) return;
     
     // Create new comment element
     const newComment = document.createElement('div');
@@ -437,8 +525,10 @@ function addCommentToUI(postId, content) {
     
     // Update comment count
     const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-toggle span`);
-    const currentCount = parseInt(commentCount.textContent) || 0;
-    commentCount.textContent = currentCount + 1;
+    if (commentCount) {
+        const currentCount = parseInt(commentCount.textContent) || 0;
+        commentCount.textContent = currentCount + 1;
+    }
 }
 
 // Show comment actions on hover
@@ -493,12 +583,19 @@ document.addEventListener('click', function(e) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.querySelector(`[data-comment-id="${commentId}"]`).remove();
+                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                    if (commentElement) {
+                        commentElement.remove();
+                    }
                     // Update comment count
-                    const postId = document.querySelector('.add-comment-form').dataset.postId;
-                    const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-toggle span`);
-                    const currentCount = parseInt(commentCount.textContent) || 0;
-                    commentCount.textContent = Math.max(0, currentCount - 1);
+                    const postId = document.querySelector('.add-comment-form')?.dataset.postId;
+                    if (postId) {
+                        const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-toggle span`);
+                        if (commentCount) {
+                            const currentCount = parseInt(commentCount.textContent) || 0;
+                            commentCount.textContent = Math.max(0, currentCount - 1);
+                        }
+                    }
                 }
             });
         }
@@ -540,12 +637,12 @@ function getCookie(name) {
 
 <script>
 // Modal handlers
-document.getElementById('cancelEdit').addEventListener('click', function() {
+document.getElementById('cancelEdit')?.addEventListener('click', function() {
     document.getElementById('editCommentModal').classList.add('hidden');
     currentEditCommentId = null;
 });
 
-document.getElementById('saveEdit').addEventListener('click', function() {
+document.getElementById('saveEdit')?.addEventListener('click', function() {
     const newContent = document.getElementById('editCommentText').value.trim();
     
     if (newContent && currentEditCommentId) {
@@ -561,12 +658,14 @@ document.getElementById('saveEdit').addEventListener('click', function() {
         .then(data => {
             if (data.success) {
                 const commentItem = document.querySelector(`[data-comment-id="${currentEditCommentId}"]`);
-                commentItem.querySelector('.comment-content').textContent = data.content;
-                
-                // Show edited indicator
-                const timeElement = commentItem.querySelector('.text-nexus-textSecondary');
-                if (data.is_edited && !timeElement.innerHTML.includes('(edited)')) {
-                    timeElement.innerHTML += ' <span class="text-nexus-textSecondary">(edited)</span>';
+                if (commentItem) {
+                    commentItem.querySelector('.comment-content').textContent = data.content;
+                    
+                    // Show edited indicator
+                    const timeElement = commentItem.querySelector('.text-nexus-textSecondary');
+                    if (data.is_edited && !timeElement.innerHTML.includes('(edited)')) {
+                        timeElement.innerHTML += ' <span class="text-nexus-textSecondary">(edited)</span>';
+                    }
                 }
                 
                 document.getElementById('editCommentModal').classList.add('hidden');
