@@ -54,11 +54,33 @@ def api_notification_list(request):
     return JsonResponse({'notifications': notification_data})
 
 @login_required
+def mark_all_as_read(request):
+    """Mark all notifications as read for the current user"""
+    if request.method == 'POST':
+        updated_count = Notification.objects.filter(
+            recipient=request.user, 
+            is_read=False
+        ).update(is_read=True)
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'Marked {updated_count} notifications as read',
+            'updated_count': updated_count
+        })
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+@login_required
 def mark_as_read(request, notification_id):
-    notification = Notification.objects.get(id=notification_id, recipient=request.user)
-    notification.is_read = True
-    notification.save()
-    return JsonResponse({'success': True})
+    """Mark a single notification as read"""
+    if request.method == 'POST':
+        try:
+            notification = Notification.objects.get(id=notification_id, recipient=request.user)
+            notification.is_read = True
+            notification.save()
+            return JsonResponse({'success': True})
+        except Notification.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
 
 @login_required
 def test_notification(request):
