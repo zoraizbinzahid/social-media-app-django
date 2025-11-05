@@ -7,6 +7,7 @@ from .models import CustomUser, Profile
 from django.db.models import Q 
 from posts.models import Post
 from followers.models import Follow
+from chat.models import Conversation
 
 def search_view(request):
     query = request.GET.get('q', '')
@@ -90,15 +91,28 @@ def profile_view(request, username=None):
             following=user_obj
         ).exists()
 
+    # Check if conversation exists between users
+    has_conversation = False
+    conversation_id = None
+    if request.user.is_authenticated and request.user != user_obj:
+        conversation = Conversation.objects.filter(  # ← This needs import
+            participants=request.user
+        ).filter(
+            participants=user_obj
+        ).first()
+        if conversation:
+            has_conversation = True
+            conversation_id = conversation.id
+
     return render(request, 'users/profile.html', {
         'user_obj': user_obj,
         'posts_count': posts_count,
         'followers_count': followers_count,
         'following_count': following_count,
         'is_following': is_following,
+        'has_conversation': has_conversation,
+        'conversation_id': conversation_id,
     })
-
-
 # ---------------------------
 # EDIT PROFILE VIEW
 # ---------------------------

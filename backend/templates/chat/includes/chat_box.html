@@ -1,0 +1,248 @@
+<!-- Global Chat Box -->
+<div id="global-chat-box" class="fixed bottom-4 right-4 w-80 bg-nexus-secondary rounded-2xl border border-nexus-border shadow-2xl z-50 hidden">
+    <!-- Chat Header -->
+    <div class="p-4 border-b border-nexus-border bg-nexus-primary rounded-t-2xl flex justify-between items-center">
+        <h3 class="font-semibold text-nexus-textPrimary">💬 Messages</h3>
+        <button id="close-chat" class="text-nexus-textSecondary hover:text-nexus-textPrimary">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    
+    <!-- Conversations List -->
+    <div id="conversations-list" class="h-64 overflow-y-auto bg-nexus-primary">
+        {% for conversation in request.user.conversations.all %}
+            {% with other_user=conversation.get_other_user request.user %}
+            {% with last_message=conversation.get_last_message %}
+            <div class="conversation-item p-3 border-b border-nexus-border hover:bg-nexus-secondary cursor-pointer transition-colors"
+                 data-conversation-id="{{ conversation.id }}"
+                 data-other-user-id="{{ other_user.id }}"
+                 data-other-username="{{ other_user.username }}">
+                <div class="flex items-center space-x-3">
+                    <!-- User Avatar -->
+                    {% if other_user.profile.profile_pic %}
+                        <img src="{{ other_user.profile.profile_pic.url }}" 
+                             alt="{{ other_user.username }}" 
+                             class="w-10 h-10 rounded-full border-2 border-nexus-accent object-cover">
+                    {% else %}
+                        <div class="w-10 h-10 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                            {{ other_user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Conversation Info -->
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-nexus-textPrimary text-sm truncate">
+                            {{ other_user.username }}
+                        </h4>
+                        {% if last_message %}
+                        <p class="text-nexus-textSecondary text-xs truncate">
+                            {% if last_message.sender == request.user %}
+                                You: {{ last_message.content }}
+                            {% else %}
+                                {{ last_message.content }}
+                            {% endif %}
+                        </p>
+                        {% else %}
+                        <p class="text-nexus-textSecondary text-xs italic">Start conversation</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% endwith %}
+        {% empty %}
+            <div class="text-center text-nexus-textSecondary py-8">
+                <p class="text-sm">No conversations yet</p>
+                <p class="text-xs mt-1">Start chatting with people you follow</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Active Chat Area (Initially Hidden) -->
+    <div id="active-chat" class="hidden">
+        <!-- Chat Header -->
+        <div class="p-3 border-b border-nexus-border bg-nexus-primary flex items-center space-x-3">
+            <button id="back-to-conversations" class="text-nexus-textSecondary hover:text-nexus-textPrimary">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <div class="flex items-center space-x-2">
+                <div id="active-user-avatar" class="w-8 h-8 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold text-sm"></div>
+                <span id="active-username" class="font-semibold text-nexus-textPrimary text-sm"></span>
+            </div>
+        </div>
+        
+        <!-- Messages Container -->
+        <div id="chat-messages" class="h-48 overflow-y-auto p-3 space-y-2 bg-nexus-primary">
+            <!-- Messages will be loaded here -->
+        </div>
+        
+        <!-- Message Input -->
+        <div class="p-3 border-t border-nexus-border bg-nexus-secondary">
+            <form id="chat-form" class="flex space-x-2">
+                {% csrf_token %}
+                <input type="text" 
+                       id="chat-input" 
+                       placeholder="Type a message..." 
+                       class="flex-1 px-3 py-2 bg-nexus-primary border border-nexus-border rounded-lg text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent text-sm"
+                       required>
+                <button type="submit" 
+                        class="px-3 py-2 bg-nexus-accent text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium">
+                    Send
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Toggle Button -->
+<button id="chat-toggle" class="fixed bottom-4 right-4 w-14 h-14 bg-nexus-accent text-white rounded-full shadow-2xl hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 z-40 flex items-center justify-center">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+    </svg>
+</button>
+
+<script>
+// Global Chat Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const chatToggle = document.getElementById('chat-toggle');
+    const chatBox = document.getElementById('global-chat-box');
+    const closeChat = document.getElementById('close-chat');
+    const conversationsList = document.getElementById('conversations-list');
+    const activeChat = document.getElementById('active-chat');
+    const backToConversations = document.getElementById('back-to-conversations');
+    let activeConversationId = null;
+    let activeOtherUserId = null;
+    let chatSocket = null;
+
+    if (chatToggle && chatBox) {
+        // Toggle chat box
+        chatToggle.addEventListener('click', function() {
+            chatBox.classList.toggle('hidden');
+        });
+        
+        // Close chat box
+        if (closeChat) {
+            closeChat.addEventListener('click', function() {
+                chatBox.classList.add('hidden');
+                if (chatSocket) {
+                    chatSocket.close();
+                }
+            });
+        }
+
+        // Back to conversations list
+        if (backToConversations) {
+            backToConversations.addEventListener('click', function() {
+                activeChat.classList.add('hidden');
+                conversationsList.classList.remove('hidden');
+                if (chatSocket) {
+                    chatSocket.close();
+                    chatSocket = null;
+                }
+            });
+        }
+
+        // Select conversation
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const conversationId = this.dataset.conversationId;
+                const otherUserId = this.dataset.otherUserId;
+                const otherUsername = this.dataset.otherUsername;
+                
+                activeConversationId = conversationId;
+                activeOtherUserId = otherUserId;
+                
+                // Update active chat header
+                document.getElementById('active-username').textContent = otherUsername;
+                document.getElementById('active-user-avatar').textContent = otherUsername.charAt(0).toUpperCase();
+                
+                // Switch to active chat
+                conversationsList.classList.add('hidden');
+                activeChat.classList.remove('hidden');
+                
+                // Load messages and connect WebSocket
+                loadMessages(conversationId);
+                connectWebSocket(conversationId);
+            });
+        });
+
+        // Send message
+        const chatForm = document.getElementById('chat-form');
+        if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const messageInput = document.getElementById('chat-input');
+                const message = messageInput.value.trim();
+                
+                if (message && chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                    chatSocket.send(JSON.stringify({
+                        'message': message,
+                        'sender_id': {{ request.user.id }},
+                        'conversation_id': activeConversationId
+                    }));
+                    messageInput.value = '';
+                }
+            });
+        }
+    }
+
+    function loadMessages(conversationId) {
+        fetch(`/chat/${conversationId}/messages/`)
+            .then(response => response.json())
+            .then(data => {
+                const messagesContainer = document.getElementById('chat-messages');
+                messagesContainer.innerHTML = '';
+                
+                data.messages.forEach(message => {
+                    const messageElement = createMessageElement(message);
+                    messagesContainer.appendChild(messageElement);
+                });
+                
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+    }
+
+    function connectWebSocket(conversationId) {
+        if (chatSocket) {
+            chatSocket.close();
+        }
+
+        chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + conversationId + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageElement = createMessageElement(data);
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        };
+
+        chatSocket.onclose = function(e) {
+            console.log('Chat socket closed');
+        };
+    }
+
+    function createMessageElement(messageData) {
+        const messageElement = document.createElement('div');
+        const isCurrentUser = messageData.sender_id == {{ request.user.id }};
+        
+        messageElement.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
+        messageElement.innerHTML = `
+            <div class="max-w-xs px-3 py-2 rounded-2xl ${isCurrentUser ? 'bg-nexus-accent text-white' : 'bg-nexus-secondary text-nexus-textPrimary'}">
+                <p class="text-sm">${messageData.message}</p>
+                <p class="text-xs mt-1 opacity-70 ${isCurrentUser ? 'text-blue-100' : 'text-nexus-textSecondary'}">
+                    ${new Date(messageData.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </p>
+            </div>
+        `;
+        
+        return messageElement;
+    }
+});
+</script>

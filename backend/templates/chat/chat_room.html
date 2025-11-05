@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Chat with {{ other_user.username }} - Nexus Social{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto h-screen flex flex-col">
+    
+    <!-- Chat Header -->
+    <div class="bg-nexus-secondary rounded-t-2xl p-6 border border-nexus-border border-b-0">
+        <div class="flex items-center space-x-4">
+            <a href="{% url 'users:profile' username=other_user.username %}" class="flex items-center space-x-4 text-nexus-textPrimary hover:text-nexus-accent transition-colors">
+                {% if other_user.profile.profile_pic %}
+                    <img src="{{ other_user.profile.profile_pic.url }}" 
+                         alt="{{ other_user.username }}" 
+                         class="w-12 h-12 rounded-full border-2 border-nexus-accent object-cover">
+                {% else %}
+                    <div class="w-12 h-12 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold">
+                        {{ other_user.username|first|upper }}
+                    </div>
+                {% endif %}
+                <div>
+                    <h1 class="text-xl font-semibold">{{ other_user.username }}</h1>
+                    <div class="flex items-center space-x-2 text-sm text-nexus-textSecondary">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>Online</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="messages-container" class="flex-1 bg-nexus-primary border border-nexus-border overflow-y-auto p-6 space-y-4">
+        {% for message in messages %}
+        <div class="flex {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %}">
+            <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-2xl {% if message.sender == request.user %}bg-nexus-accent text-white{% else %}bg-nexus-secondary text-nexus-textPrimary{% endif %}">
+                <p class="text-sm">{{ message.content }}</p>
+                <p class="text-xs mt-1 opacity-70 {% if message.sender == request.user %}text-blue-100{% else %}text-nexus-textSecondary{% endif %}">
+                    {{ message.timestamp|time:"H:i" }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Message Input -->
+    <div class="bg-nexus-secondary rounded-b-2xl p-6 border border-nexus-border border-t-0">
+        <form id="chat-form" class="flex space-x-4">
+            {% csrf_token %}
+            <input type="text" 
+                   id="chat-message-input" 
+                   placeholder="Type a message..." 
+                   class="flex-1 px-4 py-3 bg-nexus-primary border border-nexus-border rounded-xl text-nexus-textPrimary placeholder-nexus-textSecondary focus:outline-none focus:ring-2 focus:ring-nexus-accent focus:border-nexus-accent"
+                   required>
+            <button type="submit" 
+                    class="px-6 py-3 bg-nexus-accent text-white rounded-xl hover:bg-blue-600 transition-colors duration-200 font-semibold">
+                Send
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- WebSocket JavaScript -->
+<script>
+const conversationId = {{ conversation.id }};
+const currentUserId = {{ request.user.id }};
+const currentUsername = "{{ request.user.username }}";
+
+// WebSocket connection
+const chatSocket = new WebSocket(
+    'ws://' + window.location.host + '/ws/chat/' + conversationId + '/'
+);
+
+// Receive messages from WebSocket
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    
+    const messagesContainer = document.getElementById('messages-container');
+    const messageElement = document.createElement('div');
+    
+    messageElement.className = `flex ${data.sender_id == currentUserId ? 'justify-end' : 'justify-start'}`;
+    messageElement.innerHTML = `
+        <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${data.sender_id == currentUserId ? 'bg-nexus-accent text-white' : 'bg-nexus-secondary text-nexus-textPrimary'}">
+            <p class="text-sm">${data.message}</p>
+            <p class="text-xs mt-1 opacity-70 ${data.sender_id == currentUserId ? 'text-blue-100' : 'text-nexus-textSecondary'}">
+                ${new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </p>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+};
+
+// Send message on form submit
+document.getElementById('chat-form').onsubmit = function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('chat-message-input');
+    const message = messageInput.value.trim();
+    
+    if (message) {
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'sender_id': currentUserId
+        }));
+        messageInput.value = '';
+    }
+};
+
+// Auto-scroll to bottom
+window.onload = function() {
+    const messagesContainer = document.getElementById('messages-container');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+};
+
+// Handle WebSocket errors
+chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+};
+</script>
+{% endblock %}

@@ -27,7 +27,7 @@ urlpatterns = [
     path('landing/', TemplateView.as_view(template_name='core/landing.html'), name='landing'),
     path('follow/', include(('followers.urls', 'followers'), namespace='followers')),
     path('', include(('posts.urls', 'posts'), namespace='posts')), 
-    
+    path('chat/', include(('chat.urls', 'chat'), namespace='chat')),
     
     path("__reload__/", include("django_browser_reload.urls")),
 ]

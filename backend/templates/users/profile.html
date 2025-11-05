@@ -81,9 +81,19 @@
                     data-username="{{ user_obj.username }}">
                 {% if is_following %}Unfollow{% else %}Follow{% endif %}
             </button>
-            <button class="flex-1 bg-nexus-secondary border border-nexus-accent text-nexus-accent hover:bg-nexus-accent hover:text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300">
+            
+            <!-- Fixed Message Button Logic -->
+            {% if has_conversation %}
+            <a href="{% url 'chat:chat_room' conversation_id=conversation_id %}" 
+               class="flex-1 bg-nexus-secondary border border-nexus-accent text-nexus-accent hover:bg-nexus-accent hover:text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 text-center">
                 Message
-            </button>
+            </a>
+            {% else %}
+            <a href="{% url 'chat:start_conversation' username=user_obj.username %}" 
+               class="flex-1 bg-nexus-secondary border border-nexus-accent text-nexus-accent hover:bg-nexus-accent hover:text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 text-center">
+                Message
+            </a>
+            {% endif %}
             {% endif %}
         </div>
     </div>
@@ -154,9 +164,10 @@
 
 </div>
 
-<!-- Follow JavaScript -->
+<!-- JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Follow functionality
     const followBtn = document.querySelector('.follow-btn');
     
     if (followBtn) {

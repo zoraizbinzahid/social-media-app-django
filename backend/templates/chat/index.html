@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Messages - Nexus Social{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="bg-nexus-secondary rounded-2xl p-6 border border-nexus-border mb-6">
+        <h1 class="text-3xl font-bold text-nexus-textPrimary mb-2">Messages</h1>
+        <p class="text-nexus-textSecondary">Chat with your friends and followers</p>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="bg-nexus-secondary rounded-2xl border border-nexus-border overflow-hidden">
+        {% for conversation in conversations %}
+        {% with other_user=conversation.participants.exclude.id=request.user.id.first %}
+        {% with last_message=conversation.messages.last %}
+        <a href="{% url 'chat:chat_room' conversation.id %}" 
+           class="flex items-center space-x-4 p-6 border-b border-nexus-border hover:bg-nexus-primary transition-colors duration-200">
+            
+            <!-- User Avatar -->
+            <div class="relative">
+                {% if other_user.profile.profile_pic %}
+                    <img src="{{ other_user.profile.profile_pic.url }}" 
+                         alt="{{ other_user.username }}" 
+                         class="w-14 h-14 rounded-full border-2 border-nexus-accent object-cover">
+                {% else %}
+                    <div class="w-14 h-14 rounded-full bg-nexus-accent flex items-center justify-center text-white font-semibold text-lg">
+                        {{ other_user.username|first|upper }}
+                    </div>
+                {% endif %}
+                <!-- Online Status Indicator -->
+                <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-nexus-secondary"></div>
+            </div>
+
+            <!-- Conversation Info -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-semibold text-nexus-textPrimary text-lg truncate">
+                        {{ other_user.username }}
+                    </h3>
+                    {% if last_message %}
+                    <span class="text-nexus-textSecondary text-sm whitespace-nowrap">
+                        {{ last_message.timestamp|timesince }} ago
+                    </span>
+                    {% endif %}
+                </div>
+                
+                {% if last_message %}
+                <p class="text-nexus-textSecondary text-sm truncate">
+                    {% if last_message.sender == request.user %}
+                    You: {{ last_message.content }}
+                    {% else %}
+                    {{ last_message.content }}
+                    {% endif %}
+                </p>
+                {% else %}
+                <p class="text-nexus-textSecondary text-sm italic">Start a conversation</p>
+                {% endif %}
+            </div>
+        </a>
+        {% endwith %}
+        {% endwith %}
+        {% empty %}
+        <!-- Empty State -->
+        <div class="text-center py-16">
+            <div class="text-6xl mb-4">💬</div>
+            <h3 class="text-xl font-semibold text-nexus-textPrimary mb-2">No messages yet</h3>
+            <p class="text-nexus-textSecondary mb-6">Start a conversation with someone!</p>
+            <a href="{% url 'users:search' %}" 
+               class="inline-flex items-center space-x-2 bg-nexus-accent text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-all duration-200">
+                <span>Find People to Chat With</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
