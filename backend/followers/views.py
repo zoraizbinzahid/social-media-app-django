@@ -7,7 +7,7 @@ from .models import Follow
 User = get_user_model()
 
 @login_required
-def follow_toggle(request, username):  # ✅ This function must exist
+def follow_toggle(request, username):
     user_to_follow = get_object_or_404(User, username=username)
     
     if request.user == user_to_follow:
@@ -20,11 +20,19 @@ def follow_toggle(request, username):  # ✅ This function must exist
         following=user_to_follow
     )
     
-    if not created:
+    if created:
+        # Send notification to the user being followed
+        from notifications.utils import create_notification
+        create_notification(
+            recipient=user_to_follow,
+            notification_type='new_follower',
+            message=f"{request.user.username} started following you",
+            sender=request.user
+        )
+        is_following = True
+    else:
         follow.delete()
         is_following = False
-    else:
-        is_following = True
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
@@ -36,7 +44,7 @@ def follow_toggle(request, username):  # ✅ This function must exist
     return redirect('users:profile', username=username)
 
 @login_required
-def followers_list(request, username):  # ✅ This function must exist
+def followers_list(request, username):
     user = get_object_or_404(User, username=username)
     followers = User.objects.filter(following_relationships__following=user)
     
@@ -49,7 +57,7 @@ def followers_list(request, username):  # ✅ This function must exist
     })
 
 @login_required
-def following_list(request, username):  # ✅ This function must exist
+def following_list(request, username):
     user = get_object_or_404(User, username=username)
     following = User.objects.filter(follower_relationships__follower=user)
     

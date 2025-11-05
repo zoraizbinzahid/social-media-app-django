@@ -5,8 +5,6 @@ from .models import Post, Like, Comment
 from .forms import PostForm, CommentForm
 from django.contrib import messages
 
-
-
 @login_required
 def feed_view(request):
     posts = Post.objects.all().select_related('author')
@@ -20,6 +18,21 @@ def create_post(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            
+            # Send notifications to followers
+            from followers.models import Follow
+            from notifications.utils import create_notification
+            
+            followers = Follow.objects.filter(following=request.user).select_related('follower')
+            for follow in followers:
+                create_notification(
+                    recipient=follow.follower,
+                    notification_type='new_post',
+                    message=f"{request.user.username} created a new post",
+                    sender=request.user,
+                    post=post
+                )
+            
             return redirect('posts:feed')
     else:
         form = PostForm()
@@ -35,7 +48,18 @@ def like_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     like, created = Like.objects.get_or_create(user=request.user, post=post)
     
-    if not created:
+    if created:
+        # Send notification to post author
+        if post.author != request.user:
+            from notifications.utils import create_notification
+            create_notification(
+                recipient=post.author,
+                notification_type='post_like',
+                message=f"{request.user.username} liked your post",
+                sender=request.user,
+                post=post
+            )
+    else:
         like.delete()
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -45,12 +69,6 @@ def like_post(request, pk):
         })
     
     return redirect('posts:post_detail', pk=pk)
-
-
-from django.http import JsonResponse
-from .forms import CommentForm
-
-
 
 @login_required
 def add_comment(request, pk):
@@ -64,13 +82,24 @@ def add_comment(request, pk):
             comment.author = request.user
             comment.save()
             
+            # Send notification to post author
+            if post.author != request.user:
+                from notifications.utils import create_notification
+                create_notification(
+                    recipient=post.author,
+                    notification_type='post_comment',
+                    message=f"{request.user.username} commented on your post",
+                    sender=request.user,
+                    post=post,
+                    comment=comment
+                )
+            
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
             
             return redirect('posts:feed')  
     
-    return redirect('posts:feed')  
-
+    return redirect('posts:feed')
 
 @login_required
 def delete_post(request, pk):
@@ -87,7 +116,6 @@ def delete_post(request, pk):
         return redirect('posts:feed')
     
     return redirect('posts:feed')
-
 
 @login_required
 def update_comment(request, pk):
