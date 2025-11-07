@@ -1,0 +1,10 @@
+Django>=4.2,<5.0
+django-decouple
+dj-database-url
+psycopg2-binary
+channels
+channels-redis
+daphne
+whitenoise
+django-tailwind
+asgiref
