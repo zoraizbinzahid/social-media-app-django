@@ -92,3 +92,41 @@ def test_notification(request):
         sender=request.user
     )
     return JsonResponse({'success': True, 'message': 'Test notification created'})
+
+
+
+@login_required
+def send_test_websocket(request):
+    """Manually send a WebSocket message for testing"""
+    try:
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        from .models import Notification
+        
+        channel_layer = get_channel_layer()
+        user = request.user
+        unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
+        
+        message_data = {
+            'type': 'send_notification',
+            'unread_count': unread_count,
+            'message': 'TEST: WebSocket is working!',
+            'notification_type': 'test'
+        }
+        
+        print(f"🧪 SENDING MANUAL WEBSOCKET TO USER {user.id}: {message_data}")
+        
+        async_to_sync(channel_layer.group_send)(
+            f"notifications_{user.id}",
+            message_data
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'WebSocket sent to user {user.id}',
+            'unread_count': unread_count
+        })
+        
+    except Exception as e:
+        print(f"❌ MANUAL WEBSOCKET ERROR: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})

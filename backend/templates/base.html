@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Nexus Social{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/alpinejs" defer></script>
     <script>
@@ -229,7 +230,9 @@
 </footer>
 
 <script>
-// Notification functionality with fallback
+// REAL-TIME NOTIFICATION SYSTEM
+let notificationSocket = null;
+
 function loadNotifications() {
     console.log('Loading notifications...');
     
@@ -383,15 +386,125 @@ function showNotificationSetupInfo() {
 Check the browser console for detailed error information.`);
 }
 
+// REAL-TIME WEBSOCKET CONNECTION
+function connectWebSocket() {
+    if (!{% if user.is_authenticated %}true{% else %}false{% endif %}) {
+        console.log('❌ WebSocket: User not authenticated');
+        return;
+    }
+
+    try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        notificationSocket = new WebSocket(`${protocol}//${window.location.host}/ws/notifications/`);
+        
+        notificationSocket.onopen = function(e) {
+            console.log('✅ WebSocket CONNECTED for real-time notifications!');
+        };
+        
+        notificationSocket.onmessage = function(e) {
+            console.log('📨 WebSocket MESSAGE RECEIVED:', e.data);
+            try {
+                const data = JSON.parse(e.data);
+                console.log('📨 Parsed WebSocket data:', data);
+                
+                // Update notification count immediately from WebSocket data
+                if (data.unread_count !== undefined) {
+                    updateNotificationCount(data.unread_count);
+                }
+                
+                // Show browser notification
+                if (data.message && 'Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Nexus Social', {
+                        body: data.message,
+                        icon: '/static/favicon.ico'
+                    });
+                }
+                
+                // Reload notifications list to show new notifications
+                loadNotifications();
+                
+            } catch (error) {
+                console.error('❌ Error parsing WebSocket message:', error);
+            }
+        };
+        
+        notificationSocket.onclose = function(e) {
+            console.log('❌ WebSocket DISCONNECTED, retrying in 3 seconds...');
+            setTimeout(connectWebSocket, 3000);
+        };
+        
+        notificationSocket.onerror = function(err) {
+            console.error('❌ WebSocket ERROR:', err);
+        };
+        
+    } catch (error) {
+        console.error('❌ WebSocket connection failed:', error);
+    }
+}
+
+// Helper function to update notification count
+function updateNotificationCount(count) {
+    const notificationCount = document.getElementById('notification-count');
+    if (!notificationCount) {
+        console.log('❌ Notification count element not found');
+        return;
+    }
+    
+    console.log('🔄 Updating notification count to:', count);
+    
+    if (count > 0) {
+        notificationCount.textContent = count > 99 ? '99+' : count;
+        notificationCount.classList.remove('hidden');
+        // Add pulse animation for new notifications
+        notificationCount.classList.add('animate-pulse');
+        setTimeout(() => {
+            notificationCount.classList.remove('animate-pulse');
+        }, 2000);
+    } else {
+        notificationCount.classList.add('hidden');
+    }
+}
+
+// TEST: Manual WebSocket test function
+function testWebSocket() {
+    console.log('🧪 Testing WebSocket connection...');
+    fetch('/notifications/websocket-test/')
+        .then(response => response.json())
+        .then(data => {
+            console.log('🧪 WebSocket test response:', data);
+        })
+        .catch(error => {
+            console.error('❌ WebSocket test failed:', error);
+        });
+}
+
 // Load notifications count on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Only load notifications if user is authenticated
     {% if user.is_authenticated %}
+    console.log('🔔 Initializing notification system for user...');
+    
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            console.log('📢 Notification permission:', permission);
+        });
+    }
+    
     // Load notifications on page load
     loadNotifications();
     
-    // Set up polling for new notifications (every 30 seconds)
-    setInterval(loadNotifications, 30000);
+    // Connect to WebSocket for real-time updates
+    console.log('🔌 Connecting WebSocket...');
+    connectWebSocket();
+    
+    // Set up polling as fallback (every 10 seconds)
+    setInterval(loadNotifications, 10000);
+    
+    // Test WebSocket after 2 seconds
+    setTimeout(testWebSocket, 2000);
+    {% else %}
+    console.log('🔔 User not authenticated, skipping notification system');
     {% endif %}
 });
 
@@ -435,173 +548,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Add comment functionality
-document.addEventListener('submit', function(e) {
-    if (e.target.closest('.add-comment-form')) {
-        e.preventDefault();
-        const form = e.target.closest('.add-comment-form');
-        const postId = form.dataset.postId;
-        const input = form.querySelector('input[type="text"]');
-        const content = input.value.trim();
-        const button = form.querySelector('button[type="submit"]');
-        
-        if (content) {
-            // Show loading state
-            button.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v4m0 12v4m8-10h-4M6 12H2"></path></svg>';
-            button.disabled = true;
-            
-            fetch(`/${postId}/comment/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `content=${encodeURIComponent(content)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    input.value = ''; // Clear input field
-                    // Add comment to UI without reload
-                    addCommentToUI(postId, content);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                // Reset button
-                button.innerHTML = 'Post';
-                button.disabled = false;
-            });
-        }
-    }
-});
-
-// Add Enter key support for comments
-document.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter' && e.target.closest('.add-comment-form input')) {
-        const form = e.target.closest('.add-comment-form');
-        form.dispatchEvent(new Event('submit', { cancelable: true }));
-    }
-});
-
-// Function to add comment to UI without page reload
-function addCommentToUI(postId, content) {
-    const commentSection = document.querySelector(`[data-post-id="${postId}"] .comment-section`);
-    if (!commentSection) return;
-    
-    const commentsContainer = commentSection.querySelector('.space-y-4');
-    if (!commentsContainer) return;
-    
-    // Create new comment element
-    const newComment = document.createElement('div');
-    newComment.className = 'flex space-x-3 comment-item';
-    newComment.setAttribute('data-comment-id', 'new');
-    newComment.innerHTML = `
-        <div class="flex-1">
-            <div class="bg-nexus-secondary rounded-xl p-3">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="flex items-center space-x-2">
-                        <span class="font-semibold text-nexus-textPrimary text-sm">${document.querySelector('.user-dropdown span') ? document.querySelector('.user-dropdown span').textContent : 'You'}</span>
-                        <span class="text-nexus-textSecondary text-xs">just now</span>
-                    </div>
-                    <div class="comment-actions flex space-x-2 opacity-0 transition-opacity duration-200">
-                        <button class="edit-comment text-nexus-textSecondary hover:text-nexus-accent text-xs" data-comment-id="new">
-                            Edit
-                        </button>
-                        <button class="delete-comment text-red-500 hover:text-red-600 text-xs" data-comment-id="new">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-                <p class="text-nexus-textPrimary text-sm comment-content">${content}</p>
-            </div>
-        </div>
-    `;
-    
-    // Add to top of comments
-    commentsContainer.insertBefore(newComment, commentsContainer.firstChild);
-    
-    // Update comment count
-    const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-toggle span`);
-    if (commentCount) {
-        const currentCount = parseInt(commentCount.textContent) || 0;
-        commentCount.textContent = currentCount + 1;
-    }
-}
-
-// Show comment actions on hover
-document.addEventListener('mouseover', function(e) {
-    if (e.target.closest('.comment-item')) {
-        const commentItem = e.target.closest('.comment-item');
-        const actions = commentItem.querySelector('.comment-actions');
-        if (actions) {
-            actions.classList.remove('opacity-0');
-        }
-    }
-});
-
-document.addEventListener('mouseout', function(e) {
-    if (e.target.closest('.comment-item')) {
-        const commentItem = e.target.closest('.comment-item');
-        const actions = commentItem.querySelector('.comment-actions');
-        if (actions && !commentItem.matches(':hover')) {
-            actions.classList.add('opacity-0');
-        }
-    }
-});
-
-// Edit comment functionality
-let currentEditCommentId = null;
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('edit-comment')) {
-        const commentId = e.target.dataset.commentId;
-        const commentItem = e.target.closest('.comment-item');
-        const content = commentItem.querySelector('.comment-content').textContent;
-        
-        currentEditCommentId = commentId;
-        document.getElementById('editCommentText').value = content;
-        document.getElementById('editCommentModal').classList.remove('hidden');
-    }
-});
-
-// Delete comment functionality
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('delete-comment')) {
-        const commentId = e.target.dataset.commentId;
-        
-        if (confirm('Are you sure you want to delete this comment?')) {
-            fetch(`/comment/${commentId}/delete/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
-                    if (commentElement) {
-                        commentElement.remove();
-                    }
-                    // Update comment count
-                    const postId = document.querySelector('.add-comment-form')?.dataset.postId;
-                    if (postId) {
-                        const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-toggle span`);
-                        if (commentCount) {
-                            const currentCount = parseInt(commentCount.textContent) || 0;
-                            commentCount.textContent = Math.max(0, currentCount - 1);
-                        }
-                    }
-                }
-            });
-        }
-    }
-});
-
 // CSRF token helper function
 function getCookie(name) {
     let cookieValue = null;
@@ -634,47 +580,6 @@ function getCookie(name) {
         </div>
     </div>
 </div>
-
-<script>
-// Modal handlers
-document.getElementById('cancelEdit')?.addEventListener('click', function() {
-    document.getElementById('editCommentModal').classList.add('hidden');
-    currentEditCommentId = null;
-});
-
-document.getElementById('saveEdit')?.addEventListener('click', function() {
-    const newContent = document.getElementById('editCommentText').value.trim();
-    
-    if (newContent && currentEditCommentId) {
-        fetch(`/comment/${currentEditCommentId}/update/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `content=${encodeURIComponent(newContent)}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const commentItem = document.querySelector(`[data-comment-id="${currentEditCommentId}"]`);
-                if (commentItem) {
-                    commentItem.querySelector('.comment-content').textContent = data.content;
-                    
-                    // Show edited indicator
-                    const timeElement = commentItem.querySelector('.text-nexus-textSecondary');
-                    if (data.is_edited && !timeElement.innerHTML.includes('(edited)')) {
-                        timeElement.innerHTML += ' <span class="text-nexus-textSecondary">(edited)</span>';
-                    }
-                }
-                
-                document.getElementById('editCommentModal').classList.add('hidden');
-                currentEditCommentId = null;
-            }
-        });
-    }
-});
-</script>
 
 </body>
 </html>

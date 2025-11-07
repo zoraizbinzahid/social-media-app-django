@@ -90,8 +90,8 @@
         {% endfor %}
     </div>
 
-    <!-- Add Comment Form -->
-    <form class="add-comment-form flex space-x-3" data-post-id="{{ post.pk }}">
+    <!-- Add Comment Form - SIMPLE VERSION -->
+    <form class="add-comment-form flex space-x-3" method="post" action="{% url 'posts:add_comment' pk=post.pk %}">
         {% csrf_token %}
         <input type="text" 
                name="content"
@@ -106,83 +106,61 @@
 </div>
 
 <script>
-// Clear comment input after successful submission and handle AJAX
-document.addEventListener('DOMContentLoaded', function() {
-    // Add comment functionality
-    document.querySelectorAll('.add-comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const postId = this.dataset.postId;
-            const commentInput = this.querySelector('.comment-input');
-            
-            // FIXED URL - removed /posts/
-            fetch(`/${postId}/comment/`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    commentInput.value = ''; // Clear the input
-                    location.reload(); // Reload to show new comment
-                }
-            });
-        });
-    });
-    
-    // Edit comment functionality
-    document.querySelectorAll('.edit-comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const commentId = this.dataset.commentId;
-            const newContent = this.querySelector('input[type="text"]').value;
-            const formData = new FormData(this);
-            formData.append('content', newContent);
-            
-            // FIXED URL - removed /posts/
-            fetch(`/comment/${commentId}/update/`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload(); // Reload to show updated comment
-                }
-            });
-        });
-    });
-    
-    // Delete comment functionality
-    document.querySelectorAll('.delete-comment-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const commentId = this.dataset.commentId;
-            
-            if (confirm('Are you sure you want to delete this comment?')) {
-                // FIXED URL - removed /posts/
-                fetch(`/comment/${commentId}/delete/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload(); // Reload to remove comment
-                    }
-                });
+// SIMPLE COMMENT SUBMISSION - NO AJAX, NO DUPLICATES
+document.addEventListener('submit', function(e) {
+    if (e.target.closest('.add-comment-form')) {
+        // Let the form submit normally through Django
+        // This will refresh the page and show the new comment
+        console.log('Comment form submitted - allowing normal form submission');
+        return true;
+    }
+});
+
+// Edit comment functionality
+document.querySelectorAll('.edit-comment-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const commentId = this.dataset.commentId;
+        const newContent = this.querySelector('input[type="text"]').value;
+        const formData = new FormData(this);
+        formData.append('content', newContent);
+        
+        fetch(`/comment/${commentId}/update/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload to show updated comment
             }
         });
+    });
+});
+
+// Delete comment functionality
+document.querySelectorAll('.delete-comment-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const commentId = this.dataset.commentId;
+        
+        if (confirm('Are you sure you want to delete this comment?')) {
+            fetch(`/comment/${commentId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Reload to remove comment
+                }
+            });
+        }
     });
 });
 </script>
