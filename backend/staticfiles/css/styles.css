@@ -1,0 +1,50 @@
+/* static/css/styles.css */
+
+/* Theme colors */
+:root {
+    --primary: #2A2D3E;
+    --secondary: #E74C3C;
+    --accent: #3498DB;
+    --neutral: #ECF0F1;
+    --dark: #1A1D29;
+    --highlight: #F39C12;
+}
+
+/* Example body background */
+body {
+    background-color: var(--neutral);
+    color: var(--dark);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--neutral);
+    transition: background-color 0.3s;
+}
+.btn-primary:hover {
+    background-color: var(--accent);
+}
+
+/* Cards */
+.card {
+    background-color: var(--neutral);
+    border: 1px solid var(--primary);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Links */
+a {
+    color: var(--accent);
+    transition: color 0.3s;
+}
+a:hover {
+    color: var(--secondary);
+}
